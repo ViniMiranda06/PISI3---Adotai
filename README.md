@@ -19,14 +19,14 @@ Isso permite que a gestão direcione recursos de marketing e cuidados especiais 
 
 ## 🚀 Como Executar
 1. Clone o repositório:
-   `git clone https://github.com/SEU_USUARIO/NOME_DO_REPO.git`
+   `git clone https://github.com/ViniMiranda06/PISI3---Adotai`
 2. Instale as dependências:
    `pip install pandas numpy matplotlib seaborn scikit-learn imbalanced-learn shap kagglehub`
 3. Execute o script principal ou abra o Jupyter Notebook no Google Colab. O dataset será baixado automaticamente via API do Kaggle.
 
 ## 👥 Equipe
-*   **Vinícius de Oliveira Miranda**
-*   **Júlio Gabriel**
-*   **Hilário Leal**
-*   **João Augusto**
-*   **Matheus Lima**
+*   **Vinícius de Oliveira Miranda** - Pisi3
+*   **Júlio Gabriel** - Pisi3
+*   **Hilário Leal** - Pisi3 & DSI
+*   **João Augusto** - Pisi3
+*   **Matheus Lima** - DSI
