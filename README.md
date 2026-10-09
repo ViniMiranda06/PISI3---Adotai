@@ -1,28 +1,43 @@
-# 🐾 Previsão de Permanência em Abrigos de Animais (Austin Animal Center)
+# 🐾 Adotai - Dashboard de Permanência em abrigos de animais
 
-Projeto desenvolvido para a disciplina de **PISI3**, focado em aplicar técnicas de Ciência de Dados e Machine Learning para otimizar a gestão e adoção de animais.
+Um Recurso visual Interativo do nosso projeto que reflete o tempo de permanência dos animais no Austin Animal Center.
 
-## 🎯 Objetivo do Projeto
-Analisar os dados reais do Austin Animal Center para entender os fatores que prolongam a estadia de um animal no abrigo e criar um modelo preditivo capaz de classificar estadias em: **Curta, Média ou Longa**. 
+## 🎯 Objetivo
+Permitir que qualquer pessoa, sem conhecer o projeto, entenda o problema, o que foi feito e o que foi alcançado.
 
-Isso permite que a gestão direcione recursos de marketing e cuidados especiais para os animais com maior risco de longa permanência desde o dia zero.
+## 🌿 Branches
+- `main-eda`: notebook de análise exploratória e modelos
+- `main-dash`: base do dashboard
+- `dash/pagina-*`: uma branch por página, que volta para `main-dash` por pull request
 
-## 🛠️ Tecnologias e Métodos Utilizados
-*   **Linguagem:** Python
-*   **Manipulação de Dados:** Pandas, NumPy
-*   **Visualização:** Matplotlib, Seaborn
-*   **Machine Learning (Scikit-Learn):** 
-    *   *Clusterização:* K-Means (Perfilagem de animais)
-    *   *Classificação:* Random Forest, Regressão Logística, KNN
-    *   *Balanceamento:* SMOTE
-*   **Explicabilidade (XAI):** SHAP (Para entender "como" o modelo toma decisões).
+## 🗂️ Estrutura do dashboard
+| Página | Pergunta que responde |
+|---|---|
+| Início | Do que se trata o projeto? |
+| Os dados | Quanto tempo os animais ficam no abrigo? |
+| Perfis | Existem tipos de animais com estadias diferentes? |
+| Modelos | Dá para prever a permanência? |
+| Explicabilidade e app | O que pesa na previsão e como ajudar na adoção? |
 
-## 🚀 Como Executar
-1. Clone o repositório:
+## 🧱 Padrão das páginas
+Todas seguem o mesmo roteiro:
+título como pergunta → gráfico → "o que isso significa" (2 a 3 linhas) → conclusão.
+As cores e fontes ficam em `dashboard/tema.py`. Nunca copiar hex direto no código.
+
+## 📓 Origem dos resultados
+Os resultados vêm do notebook `PISI3_EDA.ipynb` (K-Means, Random Forest,
+Regressão Logística, KNN, SMOTE e SHAP). Dados: Austin Animal Center
+(Kaggle), 79.672 registros.
+
+## 🚀 Como executar
+1. Clone e entre na branch do dashboard:
    `git clone https://github.com/ViniMiranda06/PISI3---Adotai`
+   `git checkout main-dash`
 2. Instale as dependências:
-   `pip install pandas numpy matplotlib seaborn scikit-learn imbalanced-learn shap kagglehub`
-3. Execute o script principal ou abra o Jupyter Notebook no Google Colab. O dataset será baixado automaticamente via API do Kaggle.
+   `pip install -r dashboard/requirements.txt`
+3. Rode:
+   `cd dashboard && python app.py`
+4. Abra http://127.0.0.1:8050 no navegador.
 
 ## 👥 Equipe
 *   **Vinícius de Oliveira Miranda** - Pisi3

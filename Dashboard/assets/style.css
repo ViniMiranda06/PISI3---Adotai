@@ -1,0 +1,277 @@
+/* Estilo do dashboard Adotai. As cores vêm do tema.py (variáveis --primaria etc.). */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; 
+  background: var(--fundo); 
+  color: var(--texto);
+  font-family: var(--fonte-texto); 
+  font-size: 16px; 
+  line-height: 1.55;
+}
+
+h1, h2, h3 { 
+  font-family: var(--fonte-titulo); 
+  font-weight: 600; 
+  line-height: 1.25; 
+  margin: 0; 
+}
+
+a { 
+  color: var(--secundaria); 
+  text-decoration: none; 
+}
+
+/* Topo e navegação */
+.topo {
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  flex-wrap: wrap; 
+  gap: 12px;
+  padding: 14px 32px; 
+  background: var(--cartao); 
+  border-bottom: 1px solid var(--linhas);
+  position: sticky; 
+  top: 0; 
+  z-index: 10;
+}
+
+.marca { 
+  font-family: var(--fonte-titulo); 
+  font-weight: 600; 
+  font-size: 20px; 
+  color: var(--primaria); 
+}
+
+.menu { 
+  display: flex; 
+  gap: 6px; 
+  flex-wrap: wrap; 
+}
+
+.menu-link { 
+  padding: 7px 14px; 
+  border-radius: 999px; 
+  color: var(--texto-sec); 
+  font-size: 14px; 
+  font-weight: 500; 
+}
+
+.menu-link:hover { 
+  background: var(--fundo); 
+  color: var(--texto); 
+}
+
+.menu-link.ativo { 
+  background: var(--primaria); 
+  color: #fff; 
+}
+
+.conteudo { 
+  max-width: 1120px; 
+  margin: 0 auto; 
+  padding: 32px 24px 56px; 
+}
+
+.rodape { 
+  text-align: center; 
+  color: var(--texto-sec); 
+  font-size: 13px; 
+  padding: 24px; 
+  border-top: 1px solid var(--linhas); 
+}
+
+/* Landing */
+.hero { 
+  padding: 24px 0 28px; 
+}
+
+.hero-titulo { 
+  font-size: clamp(28px, 5vw, 44px); 
+  color: var(--primaria); 
+  max-width: 720px; 
+}
+
+.hero-texto { 
+  color: var(--texto-sec); 
+  font-size: 18px; 
+  max-width: 680px; 
+  margin: 14px 0 0; 
+}
+
+.secao-titulo { 
+  font-size: 22px; 
+  margin: 36px 0 16px; 
+}
+
+.nota-kpi { 
+  color: var(--texto-sec); 
+  font-size: 14px; 
+  margin: 12px 0 0; 
+}
+
+/* Grades */
+.grade { 
+  display: grid; 
+  gap: 16px; 
+}
+
+.grade-2 { 
+  grid-template-columns: repeat(2, 1fr); 
+}
+
+.grade-3 { 
+  grid-template-columns: repeat(3, 1fr); 
+}
+
+.grade-4 { 
+  grid-template-columns: repeat(4, 1fr); 
+}
+
+@media (max-width: 900px) { 
+  .grade-3, .grade-4 { grid-template-columns: repeat(2, 1fr); } 
+}
+
+@media (max-width: 600px) { 
+  .grade-2, .grade-3, .grade-4 { grid-template-columns: 1fr; } 
+  .topo { padding: 12px 16px; } 
+}
+
+/* KPI */
+.kpi { 
+  background: var(--cartao); 
+  border: 1px solid var(--linhas); 
+  border-radius: 16px; 
+  padding: 20px; 
+}
+
+.kpi-valor { 
+  font-family: var(--fonte-titulo); 
+  font-weight: 600; 
+  font-size: 32px; 
+  color: var(--primaria); 
+}
+
+.kpi-rotulo { 
+  font-weight: 500; 
+  margin-top: 2px; 
+}
+
+.kpi-nota { 
+  color: var(--texto-sec); 
+  font-size: 13px; 
+  margin-top: 4px; 
+}
+
+/* Cartões do menu */
+.menu-card {
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; 
+  background: var(--cartao); 
+  color: var(--texto);
+  border: 1px solid var(--linhas); 
+  border-radius: 16px; 
+  padding: 22px;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+
+.menu-card:hover { 
+  transform: translateY(-3px); 
+  border-color: var(--primaria); 
+  box-shadow: 0 8px 20px rgba(232,116,59,.15); 
+}
+
+.menu-icone { 
+  font-size: 30px; 
+}
+
+.menu-card h3 { 
+  font-size: 18px; 
+}
+
+.menu-card p { 
+  color: var(--texto-sec); 
+  font-size: 14px; 
+  margin: 0; 
+  flex: 1; 
+}
+
+.menu-abrir { 
+  color: var(--primaria); 
+  font-weight: 500; 
+  font-size: 14px; 
+  margin-top: 8px; 
+}
+
+/* Páginas internas */
+.pagina-cabecalho { 
+  margin-bottom: 24px; 
+}
+
+.pagina-titulo { 
+  font-size: clamp(24px, 4vw, 34px); 
+  color: var(--primaria); 
+}
+
+.pagina-subtitulo { 
+  color: var(--texto-sec); 
+  margin: 8px 0 0; 
+}
+
+.card { 
+  background: var(--cartao); 
+  border: 1px solid var(--linhas); 
+  border-radius: 16px; 
+  padding: 20px; 
+  margin-bottom: 16px; 
+}
+
+.card-titulo { 
+  font-size: 17px; 
+  margin-bottom: 12px; 
+}
+
+.bloco { 
+  border-radius: 12px; 
+  padding: 14px 18px; 
+  margin-bottom: 16px; 
+}
+
+.bloco p { 
+  margin: 4px 0 0; 
+}
+
+.rotulo { 
+  font-size: 12px; 
+  font-weight: 500; 
+  text-transform: uppercase; 
+  letter-spacing: .06em; 
+}
+
+.interpretacao { 
+  background: #E8F1F0; 
+  border-left: 4px solid var(--secundaria); 
+}
+
+.interpretacao .rotulo { 
+  color: var(--secundaria); 
+}
+
+.conclusao { 
+  background: #FDEBDD; 
+  border-left: 4px solid var(--primaria); 
+}
+
+.conclusao .rotulo { 
+  color: var(--primaria); 
+}
+
+.a-fazer {
+  border: 2px dashed var(--linhas); 
+  border-radius: 12px; 
+  padding: 48px 16px;
+  text-align: center; 
+  color: var(--texto-sec);
+}
