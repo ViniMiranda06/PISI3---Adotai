@@ -8,8 +8,8 @@ dash.register_page(__name__, path="/", name="Início", order=0)
 
 # Cartões do menu: (caminho, ícone, título, pergunta que a página responde)
 MENU = [
-    ("/dados", "Os dados", "Quanto tempo os animais ficam no abrigo?"),
-    ("/perfis", "Perfis", "Existem tipos de animais com estadias diferentes?"),
+    ("/dados", "📊", "Os dados", "Quanto tempo os animais ficam no abrigo?"),
+    ("/perfis", "🧩", "Perfis", "Existem tipos de animais com estadias diferentes?"),
     ("/modelos", "🤖", "Modelos", "Dá para prever a permanência de um animal?"),
     ("/explicabilidade", "🔍", "Explicabilidade e app", "O que pesa na previsão e como ajudar na adoção?"),
 ]
