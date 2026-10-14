@@ -18,7 +18,7 @@ RESULTADOS = [
     {"Modelo": "Random Forest", "Balanceamento": "Sem SMOTE",
      "Acurácia": 0.773768, "F1 macro": 0.529654},
     {"Modelo": "Random Forest", "Balanceamento": "Com SMOTE",
-     "Acurácia": 0.748792, "F1 macro": 0.527575},
+      "Acurácia": 0.749168, "F1 macro": 0.528638},
     {"Modelo": "Regressão Logística", "Balanceamento": "Sem SMOTE",
      "Acurácia": 0.753248, "F1 macro": 0.286420},
     {"Modelo": "Regressão Logística", "Balanceamento": "Com SMOTE",
