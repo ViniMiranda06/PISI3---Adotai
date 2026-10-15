@@ -3,6 +3,7 @@ Componentes reutilizáveis do dashboard Adotai.
 Todas as páginas devem montar o layout com estes blocos, para manter o
 roteiro: pergunta -> gráfico -> o que isso significa -> conclusão.
 """
+
 from dash import html
 
 
@@ -54,3 +55,11 @@ def grade(*filhos, colunas=2):
 def a_fazer(texto):
     """Aviso temporário para páginas ainda em construção. REMOVER ao concluir a página."""
     return html.Div(f"Em construção: {texto}", className="a-fazer")
+
+
+def legenda_leitura(texto, titulo="Como ler"):
+    """Pequeno bloco explicativo para legendas/legenda de leitura usados nos gráficos."""
+    return html.Div(
+        [html.Span(titulo, className="rotulo"), html.P(texto)],
+        className="bloco legenda-leitura",
+    )
