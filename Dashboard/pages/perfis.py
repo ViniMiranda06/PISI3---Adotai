@@ -135,13 +135,17 @@ if perfis_df is not None and not perfis_df.empty:
     perfis_df["nome_perfil"] = perfis_df.apply(
         _nomear_perfil, axis=1
     )
+    perfis_df["rotulo_grafico"] = (
+        perfis_df["nome_perfil"]
+        .str.replace("Predomínio canino · ", "", regex=False)
+    )
     fig_perfis = px.scatter(
         perfis_df,
         x="idade_mediana_anos",
         y="permanencia_mediana_dias",
         size="n_animais",
         color="especie_principal",
-        text="nome_perfil",
+        text="rotulo_grafico",
         hover_name="nome_perfil",
         hover_data={
             "idade_mediana_anos": ":.1f",
@@ -159,8 +163,31 @@ if perfis_df is not None and not perfis_df.empty:
         title="Idade e permanência mediana por perfil",
         size_max=42,
     )
-    fig_perfis.update_traces(textposition="top center")
-    fig_perfis.update_layout(height=390)
+
+    fig_perfis.update_traces(
+        textposition=["bottom left", "middle left", "top right"],
+        textfont=dict(size=10),
+        cliponaxis=False,
+    )
+
+    fig_perfis.update_layout(
+        height=390,
+        margin=dict(l=55, r=80, t=65, b=55),
+    )
+
+    fig_perfis.update_xaxes(
+        range=[
+            0,
+            float(perfis_df["idade_mediana_anos"].max()) * 1.15,
+        ]
+    )
+
+    fig_perfis.update_yaxes(
+        range=[
+            float(perfis_df["permanencia_mediana_dias"].min()) - 0.2,
+            float(perfis_df["permanencia_mediana_dias"].max()) + 0.4,
+        ]
+    )
 
     colunas = [
         {"name": "Perfil", "id": "nome_perfil"},
@@ -222,13 +249,23 @@ layout = html.Div(
             colunas=2,
         ),
         interpretacao(
-            "O método do cotovelo mostra quanto a variação interna diminui quando aumentamos o número de grupos. "
-            "A silhueta avalia a coesão e a separação; um valor próximo de zero, como o resultado aproximado de 0,131 observado no estudo, sugere sobreposição entre os grupos."
+            "O método do cotovelo ajuda a observar como a variação "
+            "interna diminui quando aumentamos o número de grupos. "
+            "A silhueta avalia o quanto os grupos são coesos e distintos "
+            "entre si. Neste estudo, o valor aproximado de 0,131 indica "
+            "uma separação limitada. Por isso, os perfis devem ser "
+            "interpretados como tendências exploratórias, e não como "
+            "categorias rígidas."
         ),
         card("Como são os perfis encontrados?", dcc.Graph(figure=fig_perfis, config={"displayModeBar": False, "responsive": True})),
         card("Resumo dos três clusters", tabela),
         conclusao(
-            "Os três clusters ajudam a resumir padrões dos registros. Os nomes descritivos de cada perfil devem ser definidos após examinar sua idade, espécie predominante e permanência mediana; a silhueta baixa recomenda cautela ao interpretar as diferenças."
+            "Os três clusters ajudam a resumir padrões dos registros, "
+            "principalmente diferenças de idade e composição por espécie. "
+            "Como a silhueta foi baixa, aproximadamente 0,131, os grupos "
+            "apresentam separação limitada. Suas características devem "
+            "ser interpretadas como tendências exploratórias, e as "
+            "diferenças de permanência devem ser analisadas com cautela."
         ),
     ]
 )
