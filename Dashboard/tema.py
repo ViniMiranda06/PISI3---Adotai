@@ -23,6 +23,11 @@ CORES_PERMANENCIA = {
 }
 ORDEM_PERMANENCIA = ["Curta", "Média", "Longa"]
 
+# Cores dos grupos (clusters) da página Perfis. Propositalmente diferentes das
+# cores de permanência (teal/amarelo/vermelho) e da cor primária, para ninguém
+# confundir "grupo" com "categoria de estadia".
+CORES_CLUSTER = ["#3B6FB6", "#8E5BA8", "#8C6A3F"]  # azul, roxo, marrom
+
 # Fontes
 FONTE_TITULO = "Poppins"
 FONTE_TEXTO = "Inter"
