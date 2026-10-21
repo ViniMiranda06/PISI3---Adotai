@@ -275,3 +275,64 @@ a {
   text-align: center; 
   color: var(--texto-sec);
 }
+
+/* Perfis: resposta direta, cartões de grupo e notas dos gráficos */
+.resposta {
+  background: var(--cartao);
+  border: 1px solid var(--linhas);
+  border-left: 4px solid var(--primaria);
+  font-size: 18px;
+}
+
+.resposta .rotulo { 
+  color: var(--primaria); 
+}
+
+.perfil-card {
+  background: var(--cartao);
+  border: 1px solid var(--linhas);
+  border-top: 5px solid var(--linhas); /* a cor do grupo entra por estilo inline */
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.perfil-nome {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 22px;
+}
+
+.perfil-tamanho {
+  color: var(--texto-sec);
+  font-size: 14px;
+  margin: 2px 0 14px;
+}
+
+.perfil-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--linhas);
+  font-size: 14px;
+}
+
+.perfil-rotulo { 
+  color: var(--texto-sec); 
+}
+
+.perfil-valor { 
+  font-weight: 500; 
+  text-align: right; 
+}
+
+.perfil-linha.destaque .perfil-valor {
+  font-family: var(--fonte-titulo);
+  font-size: 18px;
+}
+
+.nota-grafico {
+  color: var(--texto-sec);
+  font-size: 14px;
+  margin: 8px 0 0;
+}
