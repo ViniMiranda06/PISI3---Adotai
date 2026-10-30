@@ -1,0 +1,4 @@
+﻿cluster,nome_perfil,n_animais,idade_mediana_dias,especie_principal,especie_percentual,tipo_entrada_principal,permanencia_mediana_dias,permanencia_media_dias
+0,Cluster 0,33848,365.0,Dog,56.85712597494682,Stray,4.864583333333333,16.197795454843877
+1,Cluster 1,9839,2920.0,Dog,76.55249517227361,Stray,4.277777777777778,21.07275397793362
+2,Cluster 2,35985,270.0,Dog,51.657635125746836,Stray,5.098611111111111,16.103240316181125

@@ -1,0 +1,11 @@
+# Essenciais para rodar os dashboards (Principais até o momento)
+dash>=3.0
+plotly>=5.24
+pandas>=2.0
+numpy>=1.26
+
+# (Outras bibliotecas opcionais que podem vir a ser usadas ; discutir com o grupo)
+# kaleido>=1.0          # exporta gráficos como png (pode ser útil pros slides invés de printar eles)
+# scikit-learn          # voltado aos nossos modelos treinados
+# joblib                # idem: ler o modelo salvo com o joblib
+# shap                  # caso geremos o shap pelo próprio dash
