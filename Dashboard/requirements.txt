@@ -4,8 +4,11 @@ plotly>=5.24
 pandas>=2.0
 numpy>=1.26
 
+# Necessários para a página "Teste agora" (carrega data/models_bundle.joblib)
+# O bundle foi salvo com scikit-learn 1.4.2: versões mais novas funcionam, mas avisam.
+scikit-learn>=1.4
+joblib>=1.3
+
 # (Outras bibliotecas opcionais que podem vir a ser usadas ; discutir com o grupo)
 # kaleido>=1.0          # exporta gráficos como png (pode ser útil pros slides invés de printar eles)
-# scikit-learn          # voltado aos nossos modelos treinados
-# joblib                # idem: ler o modelo salvo com o joblib
 # shap                  # caso geremos o shap pelo próprio dash
