@@ -18,6 +18,7 @@ Permitir que qualquer pessoa, sem conhecer o projeto, entenda o problema, o que 
 | Perfis | Existem tipos de animais com estadias diferentes? |
 | Modelos | Dá para prever a permanência? |
 | Explicabilidade e app | O que pesa na previsão e como ajudar na adoção? |
+| Teste agora | Qual será o tempo de permanência deste animal? |
 
 ## 🧱 Padrão das páginas
 Todas seguem o mesmo roteiro:
