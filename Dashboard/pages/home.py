@@ -12,6 +12,7 @@ MENU = [
     ("/perfis", "🧩", "Perfis", "Existem tipos de animais com estadias diferentes?"),
     ("/modelos", "🤖", "Modelos", "Dá para prever a permanência de um animal?"),
     ("/explicabilidade", "🔍", "Explicabilidade e app", "O que pesa na previsão e como ajudar na adoção?"),
+    ("/teste-agora", "🧪", "Teste agora", "Simule um animal e teste a previsão dos modelos em tempo real."),
 ]
 
 layout = html.Div(
@@ -57,7 +58,7 @@ layout = html.Div(
                 )
                 for caminho, icone, titulo, pergunta in MENU
             ],
-            className="grade grade-4",
+            className="grade grade-5",
         ),
     ]
 )
