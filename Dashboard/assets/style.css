@@ -336,3 +336,75 @@ a {
   font-size: 14px;
   margin: 8px 0 0;
 }
+
+/* Formulário e Simulação - Teste Agora */
+.form-grupo {
+  margin-bottom: 14px;
+}
+.form-label {
+  display: block;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--texto);
+  margin-bottom: 6px;
+}
+.form-dica {
+  font-size: 12px;
+  color: var(--texto-sec);
+  margin-top: 4px;
+}
+.btn-preset {
+  background: var(--fundo);
+  border: 1px solid var(--linhas);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: var(--fonte-texto);
+  color: var(--texto);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+.btn-preset:hover {
+  background: var(--primaria);
+  color: #fff;
+  border-color: var(--primaria);
+}
+.btn-primario {
+  background: var(--primaria);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--fonte-titulo);
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s ease;
+}
+.btn-primario:hover {
+  opacity: 0.9;
+}
+.resultado-box {
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.resultado-badge {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--fonte-titulo);
+}
+.resultado-detalhe {
+  font-size: 15px;
+  opacity: 0.95;
+  margin-top: 6px;
+}
+.grade-5 {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
