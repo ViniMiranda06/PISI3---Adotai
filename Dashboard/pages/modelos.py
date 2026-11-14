@@ -1,5 +1,7 @@
+from pathlib import Path
 
 import dash
+import pandas as pd
 import plotly.graph_objects as go
 from dash import Input, Output, callback, dcc, html, dash_table
 
@@ -13,176 +15,151 @@ import tema
 
 dash.register_page(__name__, path="/modelos", name="Modelos", order=3)
 
+BASE_DIR = Path(__file__).resolve().parents[1]
+RESULTADOS_PATH = BASE_DIR / "data" / "resultados_modelos.csv"
 
-# Resultados iniciais e novos experimentos.
-# None representa uma métrica que não foi informada.
-RESULTADOS = [
-    {
-        "Experimento": "Inicial",
-        "Modelo": "Random Forest",
-        "Estratégia": "Sem SMOTE",
-        "Acurácia": 0.773768,
-        "F1 macro": 0.529654,
-        "F1 ponderado": None,
-    },
-    {
-        "Experimento": "Inicial",
-        "Modelo": "Random Forest",
-        "Estratégia": "Com SMOTE",
-        "Acurácia": 0.749168,
-        "F1 macro": 0.528638,
-        "F1 ponderado": None,
-    },
-    {
-        "Experimento": "Inicial",
-        "Modelo": "Regressão Logística",
-        "Estratégia": "Sem SMOTE",
-        "Acurácia": 0.753248,
-        "F1 macro": 0.286420,
-        "F1 ponderado": None,
-    },
-    {
-        "Experimento": "Inicial",
-        "Modelo": "Regressão Logística",
-        "Estratégia": "Com SMOTE",
-        "Acurácia": 0.529338,
-        "F1 macro": 0.388797,
-        "F1 ponderado": None,
-    },
-    {
-        "Experimento": "Inicial",
-        "Modelo": "KNN",
-        "Estratégia": "Sem SMOTE",
-        "Acurácia": 0.746533,
-        "F1 macro": 0.444413,
-        "F1 ponderado": None,
-    },
-    {
-        "Experimento": "Inicial",
-        "Modelo": "KNN",
-        "Estratégia": "Com SMOTE",
-        "Acurácia": 0.577471,
-        "F1 macro": 0.441384,
-        "F1 ponderado": None,
-    },
-    {
-        "Experimento": "EXP-01",
-        "Modelo": "Regressão",
-        "Estratégia": "Faixas revisadas",
-        "Acurácia": 0.48,
-        "F1 macro": 0.47,
-        "F1 ponderado": 0.50,
-    },
-    {
-        "Experimento": "EXP-02",
-        "Modelo": "XGBoost",
-        "Estratégia": "Dados originais",
-        "Acurácia": 0.65,
-        "F1 macro": 0.49,
-        "F1 ponderado": 0.60,
-    },
-    {
-        "Experimento": "EXP-03",
-        "Modelo": "XGBoost",
-        "Estratégia": "Pesos por classe",
-        "Acurácia": 0.56,
-        "F1 macro": 0.52,
-        "F1 ponderado": 0.58,
-    },
-    {
-        "Experimento": "EXP-04",
-        "Modelo": "XGBoost",
-        "Estratégia": "Pesos + novas características",
-        "Acurácia": 0.57,
-        "F1 macro": 0.53,
-        "F1 ponderado": 0.59,
-    },
+# [BINÁRIO] Curta = até 14 dias | Prolongada = mais de 14 dias.
+# Os resultados dos modelos clássicos vêm do arquivo data/resultados_modelos.csv,
+# gerado pela última célula do notebook (seção 15). Os experimentos extras abaixo
+# foram copiados das saídas do notebook binário (seções 10 a 14), arredondados.
+NOMES_PT = {
+    "Logistic Regression": "Regressão Logística",
+    "Random Forest (regularizada)": "Random Forest regularizada",
+}
+ESTRATEGIA_PT = {
+    "class_weight": "Pesos por classe",
+}
+
+EXPERIMENTOS_EXTRAS = [
+    {"Experimento": "EXP-01", "Modelo": "RF Regressor", "Estratégia": "Prevê os dias e corta em 14",
+     "Acurácia": 0.65, "F1 macro": 0.62, "F1 Prolongada": 0.51, "Recall Prolongada": 0.74},
+    {"Experimento": "EXP-02", "Modelo": "XGBoost", "Estratégia": "Dados originais",
+     "Acurácia": 0.79, "F1 macro": 0.64, "F1 Prolongada": 0.41, "Recall Prolongada": 0.30},
+    {"Experimento": "EXP-03", "Modelo": "XGBoost", "Estratégia": "Pesos por classe",
+     "Acurácia": 0.70, "F1 macro": 0.65, "F1 Prolongada": 0.52, "Recall Prolongada": 0.66},
+    {"Experimento": "EXP-04", "Modelo": "XGBoost", "Estratégia": "Pesos + raça e pelagem",
+     "Acurácia": 0.71, "F1 macro": 0.66, "F1 Prolongada": 0.54, "Recall Prolongada": 0.68},
 ]
+
+METRICAS = ["Acurácia", "F1 macro", "F1 Prolongada", "Recall Prolongada"]
+
+
+def carregar_resultados():
+    """Lê a tabela exportada pelo notebook e padroniza nomes e colunas."""
+    if not RESULTADOS_PATH.exists():
+        return None
+    try:
+        df = pd.read_csv(RESULTADOS_PATH, encoding="utf-8-sig")
+    except Exception:
+        return None
+
+    obrigatorias = {"Modelo", "Balanceamento", "Test Accuracy", "Test Macro F1",
+                    "Test F1 Prolongada", "Test Recall Prolongada", "Train Macro F1"}
+    if not obrigatorias.issubset(df.columns):
+        return None
+
+    linhas = []
+    for _, r in df.iterrows():
+        linhas.append({
+            "Experimento": "Clássicos",
+            "Modelo": NOMES_PT.get(r["Modelo"], r["Modelo"]),
+            "Estratégia": ESTRATEGIA_PT.get(r["Balanceamento"], r["Balanceamento"]),
+            "Acurácia": float(r["Test Accuracy"]),
+            "F1 macro": float(r["Test Macro F1"]),
+            "F1 Prolongada": float(r["Test F1 Prolongada"]),
+            "Recall Prolongada": float(r["Test Recall Prolongada"]),
+            "F1 macro treino": float(r["Train Macro F1"]),
+        })
+    return linhas
+
+
+CLASSICOS = carregar_resultados()
+RESULTADOS = (CLASSICOS or []) + EXPERIMENTOS_EXTRAS
+
+
+def _rotulo(r):
+    return f"{r['Experimento']} — {r['Modelo']}<br>{r['Estratégia']}"
 
 
 def criar_grafico(metrica):
-    resultados_validos = [
-        r for r in RESULTADOS
-        if r[metrica] is not None
-    ]
-
-    rotulos = [
-        f"{r['Experimento']} — {r['Modelo']}<br>{r['Estratégia']}"
-        for r in resultados_validos
-    ]
-
-    valores = [
-        r[metrica] for r in resultados_validos
-    ]
-
+    validos = [r for r in RESULTADOS if r.get(metrica) is not None]
     fig = go.Figure(
         go.Bar(
-            x=valores,
-            y=rotulos,
+            x=[r[metrica] for r in validos],
+            y=[_rotulo(r) for r in validos],
             orientation="h",
             marker_color=tema.PRIMARIA,
-            text=[f"{valor:.3f}" for valor in valores],
+            text=[f"{r[metrica]:.3f}" for r in validos],
             textposition="outside",
             cliponaxis=False,
-            hovertemplate=(
-                "%{y}<br>"
-                + metrica
-                + ": %{x:.3f}<extra></extra>"
-            ),
+            hovertemplate="%{y}<br>" + metrica + ": %{x:.3f}<extra></extra>",
         )
     )
-
     fig.update_layout(
-        title=f"{metrica} por experimento",
+        title=f"{metrica} no conjunto de teste",
         xaxis_title="Pontuação",
         yaxis_title="",
-        xaxis=dict(
-            range=[0, 0.9],
-            tickformat=".0%",
-            gridcolor=tema.LINHAS,
-        ),
-        yaxis=dict(
-            autorange="reversed",
-            automargin=True,
-        ),
+        xaxis=dict(range=[0, 1.0], tickformat=".0%", gridcolor=tema.LINHAS),
+        yaxis=dict(autorange="reversed", automargin=True),
         showlegend=False,
-        height=650,
+        height=max(420, 48 * len(validos)),
         margin=dict(l=20, r=65, t=65, b=45),
     )
-
     return fig
+
+
+def criar_grafico_overfitting():
+    """F1 macro no treino x no teste: quanto maior a distância, mais o modelo decorou o treino."""
+    if not CLASSICOS:
+        return go.Figure()
+    rotulos = [_rotulo(r) for r in CLASSICOS]
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        y=rotulos, x=[r["F1 macro treino"] for r in CLASSICOS], orientation="h",
+        name="Treino", marker_color=tema.SECUNDARIA,
+        hovertemplate="%{y}<br>Treino: %{x:.3f}<extra></extra>",
+    ))
+    fig.add_trace(go.Bar(
+        y=rotulos, x=[r["F1 macro"] for r in CLASSICOS], orientation="h",
+        name="Teste", marker_color=tema.PRIMARIA,
+        hovertemplate="%{y}<br>Teste: %{x:.3f}<extra></extra>",
+    ))
+    fig.update_layout(
+        title="F1 macro: treino x teste (diferença grande = overfitting)",
+        barmode="group",
+        xaxis=dict(range=[0, 1.0], tickformat=".0%", gridcolor=tema.LINHAS),
+        yaxis=dict(autorange="reversed", automargin=True),
+        height=max(420, 60 * len(CLASSICOS)),
+        margin=dict(l=20, r=30, t=65, b=45),
+        legend=dict(orientation="h", y=1.08, x=0),
+    )
+    return fig
+
+
+def _fmt(v, casas=3):
+    return f"{v:.{casas}f}" if v is not None else "—"
 
 
 tabela = dash_table.DataTable(
     data=[
         {
-            **r,
-            "Acurácia": (
-                f"{r['Acurácia']:.6f}"
-                if r["Acurácia"] is not None else "—"
-            ),
-            "F1 macro": (
-                f"{r['F1 macro']:.6f}"
-                if r["F1 macro"] is not None else "—"
-            ),
-            "F1 ponderado": (
-                f"{r['F1 ponderado']:.3f}"
-                if r["F1 ponderado"] is not None else "—"
-            ),
+            "Experimento": r["Experimento"],
+            "Modelo": r["Modelo"],
+            "Estratégia": r["Estratégia"],
+            "Acurácia": _fmt(r.get("Acurácia")),
+            "F1 macro": _fmt(r.get("F1 macro")),
+            "F1 Prolongada": _fmt(r.get("F1 Prolongada")),
+            "Recall Prolongada": _fmt(r.get("Recall Prolongada")),
+            "F1 macro treino": _fmt(r.get("F1 macro treino")),
         }
         for r in RESULTADOS
     ],
-    columns=[
-        {"name": "Experimento", "id": "Experimento"},
-        {"name": "Modelo", "id": "Modelo"},
-        {"name": "Estratégia", "id": "Estratégia"},
-        {"name": "Acurácia", "id": "Acurácia"},
-        {"name": "F1 macro", "id": "F1 macro"},
-        {"name": "F1 ponderado", "id": "F1 ponderado"},
-    ],
+    columns=[{"name": c, "id": c} for c in
+             ["Experimento", "Modelo", "Estratégia", "Acurácia", "F1 macro",
+              "F1 Prolongada", "Recall Prolongada", "F1 macro treino"]],
     sort_action="native",
     filter_action="native",
-    page_size=10,
+    page_size=15,
     style_table={"overflowX": "auto"},
     style_header={
         "backgroundColor": tema.FUNDO,
@@ -202,14 +179,25 @@ tabela = dash_table.DataTable(
     },
 )
 
+aviso_csv = (
+    []
+    if CLASSICOS
+    else [html.Div(
+        "Resultados dos modelos clássicos não encontrados. Rode o notebook até a seção 15 "
+        "e copie resultados_modelos.csv para a pasta Dashboard/data.",
+        className="a-fazer",
+    )]
+)
 
 layout = html.Div(
     [
         cabecalho_pagina(
-            "Dá para prever a permanência de um animal?",
-            "Comparação dos modelos iniciais e dos experimentos "
-            "com novas estratégias de treinamento e características.",
+            "Dá para prever se um animal vai ficar mais de 14 dias?",
+            "Comparação dos modelos para as classes Curta (até 14 dias) "
+            "e Prolongada (mais de 14 dias).",
         ),
+
+        *aviso_csv,
 
         card(
             "Comparação das métricas",
@@ -218,22 +206,12 @@ layout = html.Div(
                     html.Label("Métrica exibida no gráfico"),
                     dcc.Dropdown(
                         id="modelos-metrica",
-                        options=[
-                            {"label": "Acurácia", "value": "Acurácia"},
-                            {"label": "F1 macro", "value": "F1 macro"},
-                            {
-                                "label": "F1 ponderado",
-                                "value": "F1 ponderado",
-                            },
-                        ],
+                        options=[{"label": m, "value": m} for m in METRICAS],
                         value="F1 macro",
                         clearable=False,
                         style={"color": "#222"},
                     ),
-                    dcc.Graph(
-                        id="modelos-grafico",
-                        figure=criar_grafico("F1 macro"),
-                    ),
+                    dcc.Graph(id="modelos-grafico", figure=criar_grafico("F1 macro")),
                 ]
             ),
         ),
@@ -241,97 +219,110 @@ layout = html.Div(
         card("Resultados detalhados", tabela),
 
         interpretacao(
-            "A acurácia mede a proporção total de previsões corretas. "
-            "O F1 macro calcula a média do F1 entre as classes, atribuindo "
-            "o mesmo peso a cada uma. O F1 ponderado considera a frequência "
-            "das classes. Por isso, as métricas complementam-se na análise "
-            "do desempenho. Os resultados dos novos experimentos foram "
-            "informados com arredondamento; métricas não disponíveis "
-            "não são apresentadas no gráfico."
+            "Cerca de 75% dos animais saem em até 14 dias, então um modelo que sempre "
+            "responde 'Curta' já acerta 75% — por isso a acurácia sozinha engana. "
+            "O F1 macro dá o mesmo peso às duas classes, e o F1 e o recall da classe "
+            "Prolongada mostram o quanto o modelo encontra os animais que vão ficar mais "
+            "tempo, que são os que o abrigo precisa priorizar."
         ),
 
         card(
-            "Evolução dos experimentos",
+            "Treino x teste",
             html.Div(
                 [
-                    html.H4("EXP-01 — Revisão das faixas"),
+                    dcc.Graph(figure=criar_grafico_overfitting()),
                     html.P(
-                        "Inicialmente, a permanência era classificada como "
-                        "curta (até 30 dias), média (de 31 a 45 dias) e longa "
-                        "(acima de 45 dias). As faixas foram alteradas para "
-                        "curta (até 7 dias), média (de 8 a 30 dias) e longa "
-                        "(acima de 30 dias). A mudança buscou investigar se "
-                        "a distribuição das amostras nas classes média e "
-                        "longa dificultava o aprendizado por haver menos "
-                        "amostras nessas categorias. Mesmo com a nova divisão "
-                        "e o teste de regressão, os resultados permaneceram "
-                        "limitados: acurácia de aproximadamente 0,48, "
-                        "F1 macro de 0,47 e F1 ponderado de 0,50."
+                        "A Random Forest sem limite de profundidade quase decora o treino e "
+                        "perde desempenho no teste. A versão regularizada (profundidade e "
+                        "tamanho mínimo das folhas limitados) aproxima as duas barras, o "
+                        "que indica um modelo que generaliza melhor para animais novos."
                     ),
+                ]
+            ),
+        ),
 
+        card(
+            "Modelo final",
+            html.Div(
+                [
+                    html.P(
+                        "O modelo usado na página 'Teste agora' é a Random Forest regularizada "
+                        "com pesos por classe (100 árvores, profundidade máxima 20 e pelo menos "
+                        "5 animais por folha). O limiar de decisão de 0,51 foi escolhido por "
+                        "validação cruzada só no treino, para maximizar o F1 da classe Prolongada."
+                    ),
+                    html.P(
+                        "No conjunto de teste (15.935 animais): acurácia de 0,722, F1 macro de "
+                        "0,666, ROC-AUC de 0,775 e, na classe Prolongada, recall de 0,63 e "
+                        "precisão de 0,45. Ou seja, o modelo encontra cerca de 6 em cada 10 "
+                        "animais que vão passar de 14 dias, mas, de cada 10 animais que ele "
+                        "marca como Prolongada, só 4 a 5 realmente passam. Ele serve para "
+                        "priorizar atenção, não como certeza."
+                    ),
+                ]
+            ),
+        ),
+
+        card(
+            "3 classes x 2 classes",
+            html.Div(
+                [
+                    html.P(
+                        "Para checar se juntar Média e Longa melhorou a previsão, o notebook "
+                        "treinou o modelo antigo de 3 classes no mesmo treino, juntou as "
+                        "previsões Média + Longa e comparou com o modelo de 2 classes na mesma "
+                        "pergunta (o animal passa de 14 dias?). O ROC-AUC ficou praticamente "
+                        "igual: 0,769 com 3 classes e 0,767 com 2 classes."
+                    ),
+                    html.P(
+                        "A capacidade de separar os animais é a mesma. O ganho da mudança está "
+                        "na clareza: uma pergunta direta e útil para o abrigo, com métricas mais "
+                        "fáceis de interpretar."
+                    ),
+                ]
+            ),
+        ),
+
+        card(
+            "Outros experimentos",
+            html.Div(
+                [
+                    html.H4("EXP-01 — Regressão"),
+                    html.P(
+                        "Em vez de classificar, um Random Forest Regressor prevê o número "
+                        "de dias, e a previsão é cortada em 14 dias. Ele encontra bem os "
+                        "animais de permanência prolongada (recall de 0,74), mas erra muitos "
+                        "da classe Curta."
+                    ),
                     html.H4("EXP-02 — XGBoost de referência"),
                     html.P(
-                        "O XGBoost aplicado aos dados originais obteve "
-                        "acurácia de 0,65, F1 macro de 0,49 e F1 ponderado "
-                        "de 0,60. O recall foi de 0,92 para a classe Curta, "
-                        "0,25 para Longa e 0,24 para Média, mostrando "
-                        "diferenças no reconhecimento das classes."
+                        "Sem balanceamento, o XGBoost tem a maior acurácia (0,79), mas "
+                        "reconhece só 30% dos animais de permanência prolongada."
                     ),
-
                     html.H4("EXP-03 — Pesos por classe"),
                     html.P(
-                        "A aplicação de pesos por classe resultou em "
-                        "acurácia de 0,56, F1 macro de 0,52 e F1 ponderado "
-                        "de 0,58. Embora a acurácia tenha diminuído em "
-                        "relação ao EXP-02, o F1 macro aumentou, indicando "
-                        "uma distribuição mais equilibrada do desempenho "
-                        "entre as classes."
+                        "Dar mais peso à classe Prolongada troca um pouco de acurácia por "
+                        "um recall bem maior na classe Prolongada (0,66)."
                     ),
-
                     html.H4("EXP-04 — Engenharia de características"),
                     html.P(
-                        "Além dos pesos por classe, foram adicionadas "
-                        "características motivadas por pesquisas sobre "
-                        "fatores externos potencialmente relacionados à "
-                        "adoção de animais. A variável is_mix identifica "
-                        "animais de raça mista/SRD, considerando a hipótese "
-                        "de que características raciais possam estar "
-                        "associadas ao interesse dos adotantes. A variável "
-                        "is_black_or_dark identifica pelagem preta ou "
-                        "escura e permite investigar o chamado Black Dog "
-                        "Syndrome, fenômeno associado à percepção de que "
-                        "animais de pelagem escura podem enfrentar "
-                        "dificuldades adicionais de adoção. Por fim, "
-                        "simplified_breed agrupa as dez raças mais comuns, "
-                        "representando de forma simplificada possíveis "
-                        "diferenças entre raças."
-                    ),
-
-                    html.P(
-                        "Essas variáveis representam hipóteses a investigar, "
-                        "não evidências de que raça ou pelagem causem "
-                        "determinado tempo de permanência. O EXP-04 obteve "
-                        "acurácia de 0,57, F1 macro de 0,53 e F1 ponderado "
-                        "de 0,59. Esses resultados não isolam a contribuição "
-                        "individual de cada nova característica."
+                        "Foram adicionadas is_mix (raça mista/SRD), is_black_or_dark "
+                        "(pelagem escura, para investigar o Black Dog Syndrome) e "
+                        "simplified_breed (dez raças mais comuns). O ganho foi pequeno "
+                        "(F1 macro de 0,65 para 0,66). Essas variáveis são hipóteses a "
+                        "investigar, não evidência de que raça ou pelagem causem a "
+                        "permanência."
                     ),
                 ]
             ),
         ),
 
         conclusao(
-            "Os resultados demonstram que prever com precisão o tempo de "
-            "permanência dos animais é um problema desafiador. A alteração "
-            "das faixas de permanência, a escolha de diferentes modelos, "
-            "o uso de pesos por classe e a inclusão de características "
-            "adicionais produziram desempenhos distintos, mas não "
-            "eliminaram essa dificuldade. Nos experimentos iniciais, "
-            "a Random Forest apresentou F1 macro próximo de 0,53; nos "
-            "novos experimentos, os valores de F1 macro variaram de "
-            "0,47 a 0,53. Como os resultados novos estão arredondados "
-            "e a equivalência dos procedimentos de avaliação precisa "
-            "ser confirmada, esses valores não permitem afirmar uma "
-            "melhoria geral e conclusiva entre todos os modelos."
+            "Com as classes Curta e Prolongada, os melhores modelos ficam com F1 macro em torno "
+            "de 0,65 a 0,68 e conseguem identificar boa parte dos animais que vão passar "
+            "de 14 dias. Ainda assim, o desempenho tem um limite: só com os dados de "
+            "entrada não dá para saber tudo o que decide uma adoção, como divulgação, "
+            "feiras e o interesse dos visitantes."
         ),
     ]
 )

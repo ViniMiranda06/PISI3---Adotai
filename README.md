@@ -25,10 +25,18 @@ Todas seguem o mesmo roteiro:
 título como pergunta → gráfico → "o que isso significa" (2 a 3 linhas) → conclusão.
 As cores e fontes ficam em `Dashboard/tema.py`. Nunca copiar hex direto no código.
 
+## 🏷️ Classes de permanência
+- **Curta:** até 14 dias no abrigo (75,4% dos animais)
+- **Prolongada:** mais de 14 dias (24,6% dos animais)
+
 ## 📓 Origem dos resultados
 Os resultados vêm do notebook `PISI3_EDA.ipynb` (K-Means, Random Forest,
-Regressão Logística, KNN, SMOTE e SHAP). Dados: Austin Animal Center
+Regressão Logística, KNN, SMOTE, XGBoost e SHAP). Dados: Austin Animal Center
 (Kaggle), 79.672 registros.
+
+Todos os arquivos de `Dashboard/data` são gerados pela última célula do notebook
+(seção 15), na pasta `dashboard_data_binario`. Para atualizar o dashboard, rode o
+notebook inteiro e copie esses arquivos para `Dashboard/data`.
 
 ## 🚀 Como executar
 1. Clone e entre na branch do dashboard:

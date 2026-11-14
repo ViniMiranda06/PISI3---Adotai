@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import dash
+import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import dcc, html
@@ -48,9 +49,12 @@ def carregar_dados():
         "curta": "Curta",
         "média": "Média",
         "media": "Média",
-        "longa": "Longa",
+        "longa": "Prolongada",
+        "prolongada": "Prolongada",
     }
     df["stay_category"] = df["stay_category"].astype(str).str.strip().replace(mapping)
+    # [BINÁRIO] recalcula a categoria a partir dos dias: Curta (<= 14) e Prolongada (> 14)
+    df["stay_category"] = np.where(df["time_in_shelter_days"] <= 14, "Curta", "Prolongada")
 
     return df
 
@@ -145,7 +149,7 @@ else:
                 dcc.Graph(figure=fig_especie, config={"displayModeBar": False, "responsive": True}),
             ),
             interpretacao(
-                "Cães, gatos e aves apresentam distribuições diferentes de permanência. Em geral, cães e gatos tendem a ter mais casos de permanência longa que a categoria 'Other'."
+                "Cães, gatos e aves apresentam distribuições diferentes de permanência. Em geral, cães e gatos tendem a ter mais casos de permanência prolongada que a categoria 'Other'."
             ),
             card(
                 "Permanência por tipo de entrada",

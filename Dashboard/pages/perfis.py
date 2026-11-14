@@ -110,7 +110,7 @@ def _preparar_perfis(df):
     df = df.copy()
     for col in [
         "n_animais", "idade_mediana_dias", "especie_percentual",
-        "permanencia_mediana_dias", "permanencia_media_dias",
+        "permanencia_mediana_dias", "permanencia_media_dias", "pct_longa",
     ]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -161,6 +161,9 @@ def _cartao_perfil(linha, total):
     linhas.append(
         _linha("Permanência mediana", f"{_br(linha['permanencia_mediana_dias'])} dias", destaque=True)
     )
+    # pct_longa: % de animais do grupo com permanência Prolongada (> 14 dias)
+    if "pct_longa" in linha.index and pd.notna(linha["pct_longa"]):
+        linhas.append(_linha("Passam de 14 dias", f"{_br(linha['pct_longa'], 0)}%"))
 
     pct = linha["n_animais"] / total * 100
     return html.Div(
@@ -414,6 +417,12 @@ if perfis is not None:
         f"Pouco. Os grupos diferem mais na idade (de {idade_min} a {idade_max}) "
         f"do que na estadia: a permanência mediana fica entre {_br(p_min)} e "
         f"{_br(p_max)} dias em todos."
+        + (
+            f" A parcela que passa de 14 dias (permanência prolongada) também é parecida: "
+            f"de {_br(perfis['pct_longa'].min(), 0)}% a {_br(perfis['pct_longa'].max(), 0)}%, "
+            f"perto da média do abrigo (~25%)."
+            if "pct_longa" in perfis.columns else ""
+        )
     ))
     blocos.append(grade(
         *[_cartao_perfil(linha, total) for _, linha in perfis.iterrows()],
