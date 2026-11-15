@@ -20,8 +20,9 @@ CORES_PERMANENCIA = {
     "Curta": "#2A9D8F",
     "Média": "#F2B134",
     "Longa": "#D1495B",
+    "Prolongada": "#D1495B",  # nome exibido da classe > 14 dias
 }
-ORDEM_PERMANENCIA = ["Curta", "Média", "Longa"]
+ORDEM_PERMANENCIA = ["Curta", "Prolongada"]  # [BINÁRIO] Média e Longa unidas em "Prolongada" (> 14 dias)
 
 # Cores dos grupos (clusters) da página Perfis. Propositalmente diferentes das
 # cores de permanência (teal/amarelo/vermelho) e da cor primária, para ninguém

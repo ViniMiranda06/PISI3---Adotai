@@ -246,8 +246,8 @@ if shap_df is not None:
     texto_interpretacao = (
         f"Na amostra analisada, '{atributo_legivel}' apresentou a maior "
         f"importância média absoluta SHAP ({importancia_principal:.4f}). "
-        "Na análise descritiva, 14,29% dos gatos apresentaram permanência "
-        "longa (mais de 45 dias), contra 7,86% dos cães. Essa diferença "
+        "Na análise descritiva, 33,1% dos gatos apresentaram permanência "
+        "prolongada (mais de 14 dias), contra 21,0% dos cães. Essa diferença "
         "ajuda a contextualizar por que a espécie pode ser relevante para "
         "o modelo, mas não demonstra causalidade. A importância SHAP, "
         "isoladamente, também não indica se um atributo aumenta ou reduz "

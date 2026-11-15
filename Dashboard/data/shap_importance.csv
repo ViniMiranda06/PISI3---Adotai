@@ -1,29 +1,29 @@
 ﻿atributo,importancia_media_absoluta
-age_upon_intake_(days),0.0772534408942324
-intake_hour,0.040788236470657775
-animal_type_Cat,0.03986260021328564
-intake_month,0.03936163368135558
-intake_type_Owner Surrender,0.03406346354035184
-intake_year,0.03052948622974022
-sex_upon_intake_Unknown,0.028894103335315998
-intake_type_Stray,0.022088210967074622
-animal_type_Dog,0.018765763024288583
-sex_upon_intake_Intact Male,0.01861911694872962
-intake_weekday_Saturday,0.011821468184784032
-sex_upon_intake_Spayed Female,0.01036490458412409
-intake_condition_Normal,0.010118240713025306
-intake_condition_Injured,0.009852344982409335
-intake_weekday_Thursday,0.009652787481258897
-intake_weekday_Wednesday,0.008119318772886675
-intake_weekday_Monday,0.006808279846874249
-intake_type_Public Assist,0.0067457783825132615
-intake_weekday_Tuesday,0.006116772837872463
-sex_upon_intake_Neutered Male,0.005856204595222557
-intake_type_Wildlife,0.0056567837400089286
-intake_weekday_Sunday,0.0053815609216379115
-animal_type_Other,0.00350928723471864
-intake_condition_Nursing,0.00248372463933651
-intake_condition_Sick,0.0016955001400340596
-intake_condition_Other,0.00025493040102390744
-intake_condition_Pregnant,0.00011633703130542762
-intake_condition_Feral,9.400323852426898e-05
+age_upon_intake_(days),0.06207917182717691
+sex_upon_intake_Unknown,0.045372739740231725
+intake_type_Owner Surrender,0.029267800286279573
+animal_type_Dog,0.025149952034828945
+animal_type_Cat,0.02375078302915052
+intake_year,0.01949643423140554
+intake_month,0.016128604404263034
+intake_type_Wildlife,0.011172954868684781
+intake_type_Stray,0.010578796016778264
+intake_hour,0.009731396712522492
+sex_upon_intake_Intact Male,0.009307932936330298
+sex_upon_intake_Neutered Male,0.009098000625014082
+intake_condition_Normal,0.0060041579288581766
+sex_upon_intake_Spayed Female,0.0056501280317752915
+intake_condition_Injured,0.004562699302802593
+intake_weekday_Monday,0.0039057773862498204
+intake_type_Public Assist,0.003317873142310749
+intake_weekday_Tuesday,0.0031191470792282985
+intake_weekday_Saturday,0.003063786575838191
+intake_weekday_Wednesday,0.002939588822736214
+intake_condition_Sick,0.002849791128579984
+intake_weekday_Thursday,0.0026228449096385754
+animal_type_Other,0.002543726805335224
+intake_weekday_Sunday,0.002541329056689252
+intake_condition_Nursing,0.0020279822807523157
+intake_condition_Other,0.00012017410590503437
+intake_condition_Feral,4.640714872303044e-05
+intake_condition_Pregnant,8.71365574167807e-06

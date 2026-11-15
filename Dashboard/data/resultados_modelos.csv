@@ -1,0 +1,10 @@
+﻿Modelo,Balanceamento,Train Accuracy,Train Macro F1,Test Accuracy,Test Macro F1,Test F1 Prolongada,Test Recall Prolongada,Test Precisão Prolongada,Gap F1 (treino - teste)
+Random Forest,Sem SMOTE,0.9723,0.9622,0.7935,0.6835,0.497,0.4141,0.6216,0.2787
+Logistic Regression,Sem SMOTE,0.7527,0.4305,0.7527,0.431,0.003,0.0015,0.24,-0.0004
+KNN,Sem SMOTE,0.8253,0.7348,0.7494,0.621,0.4004,0.3394,0.4879,0.1138
+Random Forest,Com SMOTE,0.9726,0.963,0.7805,0.6845,0.5105,0.4645,0.5666,0.2785
+Logistic Regression,Com SMOTE,0.6225,0.5791,0.6235,0.5804,0.446,0.615,0.3498,-0.0013
+KNN,Com SMOTE,0.8096,0.7777,0.6655,0.6104,0.4638,0.5872,0.3833,0.1673
+Random Forest,class_weight,0.9656,0.9556,0.7579,0.6812,0.5249,0.5427,0.5082,0.2744
+Logistic Regression,class_weight,0.6175,0.5786,0.621,0.5834,0.4581,0.6501,0.3537,-0.0048
+Random Forest (regularizada),class_weight,0.7732,0.7317,0.713,0.6614,0.5292,0.6547,0.4441,0.0703

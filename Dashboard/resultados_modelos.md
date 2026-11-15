@@ -1,64 +1,60 @@
-# Resultados iniciais dos modelos de classificação
+# Resultados dos modelos de classificação
 
-**Projeto:** Adotai — Análise da permanência de animais em abrigos  
-**Responsabilidade:** P4 — Página 3: Modelos  
-**Fonte:** Notebook `PISI3_EDA.ipynb`, seções 6 e 7.
+**Projeto:** Adotai — Análise da permanência de animais em abrigos
+**Classes:** Curta (até 14 dias) e Prolongada (mais de 14 dias)
+**Fonte:** notebook `PISI3_EDA.ipynb` (seções 6 a 7.6), executado do início ao fim.
+A tabela completa, com métricas de treino, está em `data/resultados_modelos.csv`.
 
-## Comparação dos modelos
+## Comparação dos modelos (conjunto de teste, 15.935 animais)
 
-| Modelo | Balanceamento | Test Accuracy | Test Macro F1 |
-|---|---|---:|---:|
-| Random Forest | Sem SMOTE | 0.773768 | 0.529654 |
-| Random Forest | Com SMOTE | 0.748792 | 0.527575 |
-| Logistic Regression | Sem SMOTE | 0.753248 | 0.286420 |
-| Logistic Regression | Com SMOTE | 0.529338 | 0.388797 |
-| KNN | Sem SMOTE | 0.746533 | 0.444413 |
-| KNN | Com SMOTE | 0.577471 | 0.441384 |
+| Modelo | Balanceamento | Acurácia | F1 macro | F1 Prolongada | Recall Prolongada | F1 macro treino |
+|---|---|---:|---:|---:|---:|---:|
+| Random Forest | Sem SMOTE | 0,793 | 0,683 | 0,497 | 0,414 | 0,962 |
+| Regressão Logística | Sem SMOTE | 0,753 | 0,431 | 0,003 | 0,002 | 0,430 |
+| KNN | Sem SMOTE | 0,749 | 0,621 | 0,400 | 0,339 | 0,735 |
+| Random Forest | Com SMOTE | 0,780 | 0,684 | 0,510 | 0,465 | 0,963 |
+| Regressão Logística | Com SMOTE | 0,624 | 0,580 | 0,446 | 0,615 | 0,579 |
+| KNN | Com SMOTE | 0,665 | 0,610 | 0,464 | 0,587 | 0,778 |
+| Random Forest | Pesos por classe | 0,758 | 0,681 | 0,525 | 0,543 | 0,956 |
+| Regressão Logística | Pesos por classe | 0,621 | 0,583 | 0,458 | 0,650 | 0,579 |
+| **Random Forest regularizada** | **Pesos por classe** | **0,713** | **0,661** | **0,529** | **0,655** | **0,732** |
 
-## Observações iniciais
+Outros experimentos (seções 10 a 14 do notebook):
 
-- A Random Forest apresentou o maior F1 macro nos dois cenários avaliados.
-- A Logistic Regression apresentou melhora no F1 macro após a aplicação do SMOTE, apesar da redução na acurácia.
-- O KNN apresentou pequenas reduções no F1 macro e redução na acurácia após o balanceamento.
+| Experimento | Acurácia | F1 macro | F1 Prolongada | Recall Prolongada |
+|---|---:|---:|---:|---:|
+| EXP-01 — RF Regressor, corte em 14 dias | 0,65 | 0,62 | 0,51 | 0,74 |
+| EXP-02 — XGBoost, dados originais | 0,79 | 0,64 | 0,41 | 0,30 |
+| EXP-03 — XGBoost, pesos por classe | 0,70 | 0,65 | 0,52 | 0,66 |
+| EXP-04 — XGBoost, pesos + raça e pelagem | 0,71 | 0,66 | 0,54 | 0,68 |
 
-Estes resultados constituem a base para a comparação visual dos modelos e para as análises posteriores da página 3 do dashboard.
+## Modelo final
 
-## Análise detalhada do Random Forest
+Random Forest regularizada com pesos por classe (100 árvores, `max_depth=20`,
+`min_samples_leaf=5`). O limiar de decisão de **0,51** foi escolhido por validação
+cruzada (5 folds) só no treino, maximizando o F1 da classe Prolongada.
 
-Foram avaliadas duas configurações do Random Forest: sem balanceamento e com aplicação de SMOTE ao conjunto de treinamento. A avaliação foi realizada sobre o mesmo conjunto de teste.
+| Métrica (teste) | Valor |
+|---|---:|
+| Acurácia | 0,722 |
+| F1 macro | 0,666 |
+| ROC-AUC | 0,775 |
+| F1 — Curta | 0,803 |
+| F1 — Prolongada | 0,529 |
+| Recall — Prolongada | 0,633 |
+| Precisão — Prolongada | 0,454 |
 
-### Métricas por classe
+**Matriz de confusão** (linhas = real, colunas = previsto):
 
-| Métrica | Sem SMOTE | Com SMOTE |
+| Real \ Prevista | Curta | Prolongada |
 |---|---:|---:|
-| Acurácia | 0,773768 | 0,749168 |
-| F1 — Curta | 0,873209 | 0,858385 |
-| F1 — Média | 0,345109 | 0,360531 |
-| F1 — Longa | 0,370644 | 0,366999 |
-| F1 macro | 0,529654 | 0,528638 |
+| Curta | 9.015 | 2.993 |
+| Prolongada | 1.440 | 2.487 |
 
-### Matrizes de confusão
+## Observações
 
-As linhas representam as classes reais e as colunas, as classes previstas. A ordem das classes é Curta, Média e Longa.
-
-**Sem SMOTE**
-
-| Real \ Prevista | Curta | Média | Longa |
-|---|---:|---:|---:|
-| Curta | 11243 | 520 | 245 |
-| Média | 1550 | 635 | 166 |
-| Longa | 950 | 174 | 452 |
-
-**Com SMOTE**
-
-| Real \ Prevista | Curta | Média | Longa |
-|---|---:|---:|---:|
-| Curta | 10662 | 862 | 484 |
-| Média | 1355 | 760 | 236 |
-| Longa | 817 | 243 | 516 |
-
-### Interpretação
-
-Sem SMOTE, o modelo apresenta melhor desempenho geral em acurácia e F1 macro. Com SMOTE, o F1 da classe Média aumenta de 0,345109 para 0,360531, enquanto o F1 das classes Curta e Longa diminui. O F1 macro passa de 0,529654 para 0,528638, indicando que o balanceamento não proporcionou melhora geral relevante para o Random Forest neste experimento.
-
-**Nota metodológica:** as métricas detalhadas acima correspondem à reprodução local do experimento. Os valores com SMOTE apresentam pequenas diferenças em relação aos resultados registrados anteriormente no notebook. Para manter a consistência, esta análise utiliza os resultados da reprodução local. Além disso, a padronização das variáveis numéricas ocorreu antes da divisão entre treino e teste, o que pode introduzir vazamento de informação e deve ser considerado uma limitação metodológica.
+- **Precisão:** de cada 10 animais que o modelo final marca como Prolongada, 4 a 5 realmente passam de 14 dias. Ele serve para priorizar atenção, não como certeza.
+- **Acurácia engana:** responder sempre "Curta" já acerta 75,4%. Por isso o foco é o F1 macro e o recall da classe Prolongada.
+- **Overfitting:** a Random Forest sem limite tem F1 macro de 0,96 no treino e 0,68 no teste. A versão regularizada reduz essa diferença para 0,07.
+- **3 classes x 2 classes:** juntando as previsões Média + Longa do modelo de 3 classes, o ROC-AUC (0,769) fica praticamente igual ao do modelo de 2 classes (0,767). A mudança não aumenta o poder de previsão; ela torna a pergunta mais clara e útil para o abrigo.
+- **Metodologia:** a padronização é ajustada só no treino (sem vazamento de dados) e a divisão treino/teste é estratificada (80/20, `random_state=42`).

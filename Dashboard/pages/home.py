@@ -34,13 +34,13 @@ layout = html.Div(
                 kpi("79.672", "animais analisados", "registros de entrada e saída"),
                 kpi("4,99 dias", "mediana de permanência", "metade fica menos que isso"),
                 kpi("3", "perfis de animais", "encontrados por agrupamento (K-Means)"),
-                kpi("77,4%", "acurácia do melhor modelo", "Random Forest. F1 macro: 0,53"),
+                kpi("24,6%", "ficam mais de 14 dias", "classe Prolongada; os outros 75,4% são Curta"),
             ],
             className="grade grade-4",
         ),
         html.P(
-            "A acurácia é alta porque a maioria dos animais fica pouco tempo. "
-            "O F1 macro mostra que prever estadias médias e longas ainda é difícil.",
+            "Como só 1 em cada 4 animais passa de 14 dias, um modelo que sempre responde "
+            "'Curta' já acertaria 75%. Por isso olhamos o F1 macro e o recall da classe Prolongada.",
             className="nota-kpi",
         ),
         html.H2("Explore o projeto", className="secao-titulo"),
