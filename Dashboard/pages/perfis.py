@@ -373,6 +373,43 @@ def _figuras_metodo(metricas, k):
     return fig_cotovelo, fig_silhueta, float(ponto["silhueta"])
 
 
+def _figura_calinski(metricas, k):
+    """Índice de Calinski-Harabasz por k, com o k escolhido destacado."""
+    metricas = metricas.sort_values("k")
+    ponto = metricas.loc[metricas["k"] == k].iloc[0]
+    k_max = int(metricas.loc[metricas["calinski_harabasz"].idxmax(), "k"])
+    fig = px.line(
+        metricas, x="k", y="calinski_harabasz", markers=True,
+        labels={"k": "Número de grupos (k)", "calinski_harabasz": "Índice de Calinski-Harabasz"},
+        title="Índice de Calinski-Harabasz",
+    )
+    fig.update_traces(
+        line_color=tema.TEXTO_SEC,
+        marker_color=tema.TEXTO_SEC,
+        hovertemplate="<b>k = %{x} grupos</b><br>Calinski-Harabasz: %{y:,.0f}<extra></extra>",
+    )
+    fig.add_trace(go.Scatter(
+        x=[k], y=[ponto["calinski_harabasz"]], mode="markers",
+        marker=dict(size=14, color=tema.PRIMARIA, line=dict(color="white", width=2)),
+        showlegend=False, hoverinfo="skip",
+    ))
+    fig.add_annotation(
+        x=k, y=ponto["calinski_harabasz"],
+        text=f"<b>k = {k}: {_br(ponto['calinski_harabasz'], 0)}</b>"
+             + (" (maior valor)" if k == k_max else ""),
+        showarrow=True, arrowhead=2,
+        ax=55, ay=-28,  # mesmo estilo da seta do gráfico do cotovelo
+        font=dict(color=tema.PRIMARIA, size=12),
+        arrowcolor=tema.PRIMARIA,
+        bgcolor="rgba(255, 255, 255, 0.85)",
+        borderpad=2,
+    )
+    fig.update_xaxes(dtick=1)
+    fig.update_yaxes(tickformat="~s")
+    fig.update_layout(height=340)
+    return fig, float(ponto["calinski_harabasz"]), k_max
+
+
 def _faixa_silhueta(valor):
     if valor < 0.25:
         return "na faixa de grupos pouco separados"
@@ -490,11 +527,35 @@ if metricas is not None:
         ),
         colunas=2,
     ))
+    # Terceiro critério: Calinski-Harabasz (só aparece se o notebook já exportou a coluna)
+    concorda = ""
+    if "calinski_harabasz" in metricas.columns:
+        fig_ch, ch, k_ch = _figura_calinski(metricas, k_escolhido)
+        if k_ch == k_escolhido:
+            texto_ch = (f"O maior valor também está em k = {k_escolhido} ({_br(ch, 0)}), o mesmo "
+                        "apontado pela silhueta: os dois critérios concordam na escolha do número de grupos.")
+            concorda = " Silhueta e Calinski-Harabasz concordam em k = " + str(k_escolhido) + "."
+        else:
+            texto_ch = (f"O maior valor está em k = {k_ch}, diferente do k = {k_escolhido} escolhido pela "
+                        "silhueta. Os critérios não concordam, o que reforça que a separação entre os grupos é fraca.")
+        blocos.append(card(
+            "Um terceiro critério confirma?",
+            _grafico(fig_ch, 350),
+            html.P(
+                "O índice de Calinski-Harabasz compara a dispersão entre os grupos com a dispersão "
+                "dentro de cada grupo: quanto maior, mais separados e compactos eles são. Ele não tem "
+                "uma escala fixa como a silhueta, por isso serve para comparar os valores de k entre si. "
+                + texto_ch,
+                className="nota-grafico",
+            ),
+        ))
+
     blocos.append(conclusao(
         "Os grupos ajudam a resumir quem chega ao abrigo, mas a separação entre eles "
         f"é fraca (silhueta de {_br(sil, 3)}). Isso ocorre porque características de abrigo "
         "são contínuas (não existem barreiras rígidas entre um filhote de 10 meses e um jovem "
         "de 1 ano). Use os perfis como tendências gerais, não como categorias isoladas."
+        + concorda
     ))
 else:
     mensagem = (
