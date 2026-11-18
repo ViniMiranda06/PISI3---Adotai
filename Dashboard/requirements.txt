@@ -5,9 +5,8 @@ pandas>=2.0
 numpy>=1.26
 
 # Necessários para a página "Teste agora" (carrega data/models_bundle.joblib)
-# O bundle é gerado pela última célula do notebook (seção 15). Use a mesma versão
-# do scikit-learn em que o notebook foi executado (testado com 1.9.1).
-scikit-learn>=1.4
+# Fixado na mesma versão 1.9.1 em que o notebook foi executado para evitar conflitos de unpickle.
+scikit-learn==1.9.1
 joblib>=1.3
 
 # (Outras bibliotecas opcionais que podem vir a ser usadas ; discutir com o grupo)
