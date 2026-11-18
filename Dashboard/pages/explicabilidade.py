@@ -10,6 +10,7 @@ from dash import dcc, html
 
 from componentes import cabecalho_pagina, card, conclusao, interpretacao
 import tema
+from leitura import existe_tabela, ler_tabela
 
 
 dash.register_page(
@@ -53,16 +54,14 @@ def figura_indisponivel(mensagem):
 
 def carregar_shap():
     """Carrega e valida os resultados SHAP exportados pelo notebook."""
-    if not SHAP_PATH.exists():
+    if not existe_tabela(SHAP_PATH):
         return None
 
     try:
-        dados = pd.read_csv(
-            SHAP_PATH,
-            encoding="utf-8-sig",
-        )
+        dados = ler_tabela(SHAP_PATH)  # .parquet ou .csv
     except (
         OSError,
+        ValueError,
         pd.errors.ParserError,
         pd.errors.EmptyDataError,
         UnicodeDecodeError,

@@ -16,6 +16,7 @@ from dash import dcc, html
 
 from componentes import a_fazer, cabecalho_pagina, card, conclusao, grade, interpretacao
 import tema
+from leitura import existe_tabela, ler_tabela
 
 dash.register_page(
     __name__,
@@ -94,11 +95,12 @@ def _figura_indisponivel(mensagem):
 
 
 def _ler_csv(caminho, colunas_obrigatorias):
-    if not caminho.exists():
+    """Lê a tabela em .parquet (preferência) ou .csv."""
+    if not existe_tabela(caminho):
         return None
     try:
-        df = pd.read_csv(caminho, encoding="utf-8-sig")
-    except (OSError, pd.errors.ParserError, UnicodeDecodeError):
+        df = ler_tabela(caminho)
+    except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError):
         return None
     if not set(colunas_obrigatorias).issubset(df.columns):
         return None

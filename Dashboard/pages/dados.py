@@ -9,6 +9,7 @@ from dash import dcc, html
 
 from componentes import cabecalho_pagina, card, conclusao, interpretacao, kpi, grade
 import tema
+from leitura import existe_tabela, ler_tabela
 
 dash.register_page(__name__, path="/dados", name="Os dados", order=1)
 
@@ -26,11 +27,11 @@ def formatar_numero(valor):
 
 
 def carregar_dados():
-    if not CSV_PATH.exists():
+    if not existe_tabela(CSV_PATH):
         return None
 
     try:
-        df = pd.read_csv(CSV_PATH, encoding="utf-8-sig")
+        df = ler_tabela(CSV_PATH)  # permanencia.parquet ou permanencia.csv
     except Exception:
         return None
 
@@ -69,7 +70,7 @@ if df is None:
                 "Distribuição da permanência, por espécie e por tipo de entrada.",
             ),
             html.Div(
-                "CSV de dados não encontrado ou em formato inválido. Gere o arquivo Dashboard/data/permanencia.csv (colunas: time_in_shelter_days, animal_type, intake_type, stay_category) e volte a abrir a página.",
+                "CSV de dados não encontrado ou em formato inválido. Gere o arquivo Dashboard/data/permanencia.parquet (ou .csv) (colunas: time_in_shelter_days, animal_type, intake_type, stay_category) e volte a abrir a página.",
                 className="a-fazer",
             ),
         ]
