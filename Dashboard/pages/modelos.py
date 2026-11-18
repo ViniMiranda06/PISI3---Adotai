@@ -12,6 +12,7 @@ from componentes import (
     interpretacao,
 )
 import tema
+from leitura import existe_tabela, ler_tabela
 
 dash.register_page(__name__, path="/modelos", name="Modelos", order=3)
 
@@ -46,10 +47,10 @@ METRICAS = ["Acurácia", "F1 macro", "F1 Prolongada", "Recall Prolongada"]
 
 def carregar_resultados():
     """Lê a tabela exportada pelo notebook e padroniza nomes e colunas."""
-    if not RESULTADOS_PATH.exists():
+    if not existe_tabela(RESULTADOS_PATH):
         return None
     try:
-        df = pd.read_csv(RESULTADOS_PATH, encoding="utf-8-sig")
+        df = ler_tabela(RESULTADOS_PATH)  # .parquet ou .csv
     except Exception:
         return None
 

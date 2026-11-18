@@ -9,6 +9,9 @@ numpy>=1.26
 scikit-learn==1.9.1
 joblib>=1.3
 
+# Leitura das tabelas em Parquet (Dashboard/data/*.parquet). Sem ele, o dashboard usa os .csv.
+pyarrow>=14
+
 # (Outras bibliotecas opcionais que podem vir a ser usadas ; discutir com o grupo)
 # kaleido>=1.0          # exporta gráficos como png (pode ser útil pros slides invés de printar eles)
 # shap                  # caso geremos o shap pelo próprio dash

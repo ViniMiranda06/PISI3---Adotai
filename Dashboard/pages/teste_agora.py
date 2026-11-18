@@ -599,31 +599,36 @@ def _avisos(animal_type, dias_idade, condicao, tipo_entrada):
 
 
 def _termometro(prob, limiar):
-    """Barra de 0 a 100% com faixas: abaixo da média, acima da média e acima do limiar."""
-    fig = go.Figure(
-        go.Indicator(
-            mode="number+gauge",
-            value=prob * 100,
-            number={"suffix": "%", "valueformat": ".0f", "font": {"size": 34}},
-            gauge={
-                "shape": "bullet",
-                "axis": {"range": [0, 100], "ticksuffix": "%"},
-                "bar": {"color": "#333333", "thickness": 0.35},
-                "steps": [
-                    {"range": [0, MEDIA_ABRIGO * 100], "color": "#CFEDE8"},
-                    {"range": [MEDIA_ABRIGO * 100, limiar * 100], "color": "#FBE7B5"},
-                    {"range": [limiar * 100, 100], "color": "#F4C6CC"},
-                ],
-                "threshold": {"line": {"color": COR_CLASSE["Prolongada"], "width": 3}, "thickness": 0.9,
-                              "value": limiar * 100},
-            },
-            domain={"x": [0.18, 1], "y": [0, 1]},
-        )
-    )
+    """Régua de 0 a 100% com faixas: abaixo da média, acima da média e acima do limiar.
+
+    Desenhada com formas do Plotly (e não com go.Indicator), para os números do eixo
+    ficarem sempre abaixo da barra e nada ser cortado em telas estreitas.
+    """
+    faixas = [
+        (0, MEDIA_ABRIGO * 100, "#CFEDE8"),
+        (MEDIA_ABRIGO * 100, limiar * 100, "#FBE7B5"),
+        (limiar * 100, 100, "#F4C6CC"),
+    ]
+    fig = go.Figure()
+    for x0, x1, cor in faixas:
+        fig.add_shape(type="rect", x0=x0, x1=x1, y0=0, y1=1, fillcolor=cor, line_width=0, layer="below")
+    # linha do limiar
+    fig.add_shape(type="line", x0=limiar * 100, x1=limiar * 100, y0=-0.2, y1=1.2,
+                  line=dict(color=COR_CLASSE["Prolongada"], width=3))
+    # posição deste animal
+    fig.add_trace(go.Scatter(
+        x=[prob * 100], y=[0.5], mode="markers",
+        marker=dict(symbol="diamond", size=20, color="#333333", line=dict(color="#FFFFFF", width=2)),
+        hovertemplate="Chance de passar de 14 dias: %{x:.0f}%<extra></extra>",
+    ))
+    fig.update_xaxes(range=[0, 100], dtick=20, ticksuffix="%", showgrid=False, zeroline=False,
+                     fixedrange=True, ticks="outside", ticklen=4)
+    fig.update_yaxes(visible=False, range=[-0.35, 1.35], fixedrange=True)
     fig.update_layout(
-        height=130,
-        margin=dict(l=10, r=30, t=40, b=20),
-        title=dict(text="Chance de passar de 14 dias", x=0, font=dict(size=15)),
+        height=95,
+        margin=dict(l=14, r=22, t=6, b=30),
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
     )
     return fig
@@ -631,10 +636,11 @@ def _termometro(prob, limiar):
 
 def _legenda_termometro(limiar):
     def item(cor, txt):
-        return html.Span(
+        return html.Div(
             [html.Span(style={"display": "inline-block", "width": "12px", "height": "12px", "background": cor,
-                              "borderRadius": "3px", "marginRight": "6px", "verticalAlign": "middle"}), txt],
-            style={"marginRight": "16px", "whiteSpace": "nowrap"},
+                              "borderRadius": "3px", "marginRight": "6px", "flexShrink": "0"}),
+             html.Span(txt)],
+            style={"display": "flex", "alignItems": "center"},
         )
     return html.Div(
         [
@@ -643,29 +649,40 @@ def _legenda_termometro(limiar):
             item("#F4C6CC", f"acima do limiar ({limiar * 100:.0f}%): Prolongada"),
         ],
         className="nota-grafico",
-        style={"display": "flex", "flexWrap": "wrap", "gap": "4px"},
+        style={"display": "flex", "flexWrap": "wrap", "columnGap": "18px", "rowGap": "6px", "marginTop": "4px"},
     )
 
 
 def _comparar_modelos(df_encoded, modelo_escolhido):
+    # Modelo alinhado à esquerda; as outras colunas centralizadas no cabeçalho e nas linhas.
+    base_th = {"padding": "8px 10px", "borderBottom": f"2px solid {tema.LINHAS}", "fontWeight": "700"}
+    base_td = {"padding": "8px 10px", "borderBottom": f"1px solid {tema.LINHAS}"}
+    esq, centro = {"textAlign": "left"}, {"textAlign": "center"}
     linhas = []
     for nome, modelo in BUNDLE.get("models", {}).items():
         prob = _prob_prolongada(modelo, df_encoded)
         lim = _limiar(nome)
         classe = "Prolongada" if prob >= lim else "Curta"
-        estilo = {"fontWeight": "700"} if nome == modelo_escolhido else {}
+        destaque = {"fontWeight": "700"} if nome == modelo_escolhido else {}
         linhas.append(html.Tr(
             [
-                html.Td(nome, style=estilo),
-                html.Td(f"{prob * 100:.0f}%", style={**estilo, "textAlign": "right"}),
-                html.Td(f"{lim * 100:.0f}%", style={**estilo, "textAlign": "right"}),
-                html.Td(classe, style={**estilo, "color": COR_CLASSE[classe], "paddingLeft": "12px"}),
+                html.Td(nome, style={**base_td, **esq, **destaque}),
+                html.Td(f"{prob * 100:.0f}%", style={**base_td, **centro, **destaque}),
+                html.Td(f"{lim * 100:.0f}%", style={**base_td, **centro, **destaque}),
+                html.Td(classe, style={**base_td, **centro, **destaque, "color": COR_CLASSE[classe]}),
             ]
         ))
-    cab = html.Tr([html.Th("Modelo"), html.Th("Chance > 14 dias", style={"textAlign": "right"}),
-                   html.Th("Limiar", style={"textAlign": "right"}), html.Th("Resultado", style={"paddingLeft": "12px"})])
-    return html.Table([html.Thead(cab), html.Tbody(linhas)],
-                      style={"width": "100%", "fontSize": "14px", "borderCollapse": "collapse"})
+    cab = html.Tr([
+        html.Th("Modelo", style={**base_th, **esq}),
+        html.Th("Chance > 14 dias", style={**base_th, **centro}),
+        html.Th("Limiar", style={**base_th, **centro}),
+        html.Th("Resultado", style={**base_th, **centro}),
+    ])
+    return html.Div(
+        html.Table([html.Thead(cab), html.Tbody(linhas)],
+                   style={"width": "100%", "fontSize": "14px", "borderCollapse": "collapse"}),
+        style={"overflowX": "auto"},
+    )
 
 
 @callback(
@@ -750,7 +767,12 @@ def executar_previsao(
                                           "background": tema.FUNDO, "borderLeft": f"4px solid {cor}",
                                           "fontSize": "14px", "fontWeight": "600"}),
             *[html.Div(f"⚠️ Combinação rara: {a}", className="a-fazer", style={"marginTop": "10px"}) for a in avisos],
-            dcc.Graph(figure=_termometro(prob, limiar), config={"displayModeBar": False, "responsive": True}),
+            html.Div(
+                [html.Span("Chance de passar de 14 dias: "), html.Strong(f"{prob * 100:.0f}%")],
+                style={"fontSize": "15px", "marginTop": "16px"},
+            ),
+            dcc.Graph(figure=_termometro(prob, limiar), config={"displayModeBar": False, "responsive": True},
+                      style={"height": "95px"}),
             _legenda_termometro(limiar),
             html.P(f"Sobre a confiança: {confianca}", className="nota-grafico", style={"marginTop": "10px"}),
             html.H4("Os 3 modelos para este mesmo animal", style={"margin": "18px 0 8px"}),
