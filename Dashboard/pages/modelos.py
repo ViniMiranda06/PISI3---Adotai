@@ -180,6 +180,87 @@ tabela = dash_table.DataTable(
     },
 )
 
+# [JUSTIÇA] Auditoria de desempenho por subgrupos do modelo final (Random Forest regularizada,
+# limiar 0,51, 15.935 animais de teste). Valores da saída da célula 7.4.1 do notebook (EDA);
+# recall e precisão de cada grupo calculados a partir das contagens da própria auditoria
+# (N real Prolongada e falsos negativos) e arredondados para 3 casas.
+# Cada linha: (grupo, N, N real Prolongada, recall, precisão, falsos negativos, observação).
+_OBS_POUCOS = "Poucos casos Prolongada: leitura frágil"
+JUSTICA_ESPECIE = [
+    ("Bird", 84, 18, "0.722", "0.929", 5, _OBS_POUCOS),
+    ("Cat", 5933, 2004, "0.806", "0.511", 388, ""),
+    ("Dog", 9022, 1845, "0.445", "0.369", 1024, ""),
+    ("Other", 896, 60, "0.617", "0.487", 23, _OBS_POUCOS),
+]
+JUSTICA_SEXO = [
+    ("Intact Female", 4794, 1418, "0.669", "0.517", 470, ""),
+    ("Intact Male", 5001, 1443, "0.667", "0.471", 480, ""),
+    ("Neutered Male", 2531, 531, "0.514", "0.345", 258, ""),
+    ("Spayed Female", 2241, 509, "0.593", "0.374", 207, ""),
+    ("Unknown", 1368, 26, "0.038", "1.000", 25, _OBS_POUCOS),
+]
+JUSTICA_IDADE = [
+    ("Filhote (< 1 ano)", 6666, 1835, "0.793", "0.546", 379, ""),
+    ("Adulto (1 a < 7 anos)", 7824, 1767, "0.477", "0.355", 925, ""),
+    ("Idoso (>= 7 anos)", 1445, 325, "0.582", "0.429", 136, ""),
+]
+# Diferença de recall (maior - menor) entre os grupos de cada dimensão, da célula 7.4.1.
+JUSTICA_DIFERENCAS = [
+    ("Espécie", "Dog (0.445)", "Cat (0.806)", "0.361"),
+    ("Sexo", "Unknown (0.038)", "Intact Female (0.669)", "0.630"),
+    ("Faixa etária", "Adulto (0.477)", "Filhote (0.793)", "0.317"),
+]
+COLUNAS_JUSTICA = ["Grupo", "N", "N Prolongada", "Recall Prolongada",
+                   "Precisão Prolongada", "Falsos negativos", "Observação"]
+
+_ESTILO_TABELA = dict(
+    style_table={"overflowX": "auto"},
+    style_header={
+        "backgroundColor": tema.FUNDO,
+        "color": tema.TEXTO,
+        "fontWeight": "bold",
+        "border": f"1px solid {tema.LINHAS}",
+    },
+    style_cell={
+        "backgroundColor": tema.CARTAO,
+        "color": tema.TEXTO,
+        "padding": "10px",
+        "textAlign": "left",
+        "border": f"1px solid {tema.LINHAS}",
+        "whiteSpace": "normal",
+        "height": "auto",
+        "minWidth": "90px",
+    },
+)
+
+
+def _milhar(v):
+    return f"{v:,}".replace(",", ".")
+
+
+def _tabela_justica(linhas):
+    """Tabela compacta de um subgrupo, com o mesmo estilo da tabela de resultados."""
+    return dash_table.DataTable(
+        data=[
+            {"Grupo": g, "N": _milhar(n), "N Prolongada": _milhar(npro),
+             "Recall Prolongada": rec, "Precisão Prolongada": prec,
+             "Falsos negativos": _milhar(fn), "Observação": obs}
+            for g, n, npro, rec, prec, fn, obs in linhas
+        ],
+        columns=[{"name": c, "id": c} for c in COLUNAS_JUSTICA],
+        **_ESTILO_TABELA,
+    )
+
+
+def _tabela_diferencas_justica():
+    cols = ["Dimensão", "Menor recall", "Maior recall", "Diferença de recall"]
+    return dash_table.DataTable(
+        data=[dict(zip(cols, linha)) for linha in JUSTICA_DIFERENCAS],
+        columns=[{"name": c, "id": c} for c in cols],
+        **_ESTILO_TABELA,
+    )
+
+
 aviso_csv = (
     []
     if CLASSICOS
@@ -259,6 +340,98 @@ layout = html.Div(
                         "animais que vão passar de 14 dias, mas, de cada 10 animais que ele "
                         "marca como Prolongada, só 4 a 5 realmente passam. Ele serve para "
                         "priorizar atenção, não como certeza."
+                    ),
+                ]
+            ),
+        ),
+        card(
+            "Justiça",
+            html.Div(
+                [
+                    html.P(
+                        "Esta auditoria compara o desempenho do modelo final entre grupos de "
+                        "animais definidos por espécie, sexo e idade, no mesmo conjunto de teste "
+                        "(15.935 animais) e com o mesmo limiar de 0,51. Ela mostra se o modelo "
+                        "encontra os animais de permanência prolongada com a mesma facilidade em "
+                        "todos os grupos. O modelo não foi alterado nem retreinado para isso."
+                    ),
+                    html.P(
+                        "A previsão usa características conhecidas na entrada do animal: espécie, "
+                        "sexo, idade, condição de entrada, tipo de entrada e informações de data "
+                        "e hora. O modelo usa class_weight='balanced' para lidar com a diferença "
+                        "de frequência entre Curta e Prolongada. Isso trata a distribuição das "
+                        "classes, mas não garante desempenho equivalente entre grupos de animais."
+                    ),
+                    html.P(
+                        "Como ler as tabelas: N é o total de animais do grupo; N Prolongada é "
+                        "quantos realmente passaram de 14 dias; o recall é a parte desses animais "
+                        "que o modelo encontrou; a precisão é a parte das previsões 'Prolongada' "
+                        "que estava certa; falsos negativos são animais Prolongada que o modelo "
+                        "marcou como Curta."
+                    ),
+
+                    html.H4("Por espécie"),
+                    _tabela_justica(JUSTICA_ESPECIE),
+
+                    html.H4("Por sexo"),
+                    html.P(
+                        "As categorias são as da base de dados: Intact = não castrado, Neutered "
+                        "Male = macho castrado, Spayed Female = fêmea castrada e Unknown = sexo "
+                        "não informado.",
+                        style={"color": tema.TEXTO_SEC},
+                    ),
+                    _tabela_justica(JUSTICA_SEXO),
+
+                    html.H4("Por faixa etária"),
+                    _tabela_justica(JUSTICA_IDADE),
+
+                    html.H4("Diferenças de recall entre grupos"),
+                    _tabela_diferencas_justica(),
+                    html.P(
+                        "A diferença é descritiva: o maior recall menos o menor recall entre os "
+                        "grupos de cada dimensão.",
+                        style={"color": tema.TEXTO_SEC},
+                    ),
+
+                    interpretacao(
+                        "O modelo não acerta igualmente em todos os grupos. Por espécie, ele "
+                        "encontra 0,806 dos gatos de permanência prolongada, mas só 0,445 dos "
+                        "cães, e os cães concentram 1.024 dos 1.440 falsos negativos do teste. "
+                        "Por idade, o recall é maior nos filhotes (0,793) e menor nos adultos "
+                        "(0,477). Por sexo, a maior diferença (0,630) vem do grupo Unknown, que "
+                        "tem só 26 animais Prolongada e recall de 0,038; entre os demais grupos "
+                        "o recall vai de 0,514 (Neutered Male) a 0,669 (Intact Female)."
+                    ),
+                    html.P(
+                        "Atenção às amostras pequenas: Bird (18 animais Prolongada), Other (60) "
+                        "e Unknown em sexo (26) têm poucos casos da classe Prolongada, e seus "
+                        "valores mudam muito com poucos animais. A marcação 'leitura frágil' é um "
+                        "alerta deste card (menos de 100 animais Prolongada), não um teste "
+                        "estatístico; o critério de amostra limitada do notebook não marcou "
+                        "nenhum grupo. Por isso, comparações que envolvem esses grupos não são "
+                        "confiáveis."
+                    ),
+                    html.P(
+                        "Limitações: são comparações de desempenho em um único conjunto de "
+                        "teste, sem teste estatístico. Elas mostram diferenças, mas não explicam "
+                        "a causa (por exemplo, diferenças reais na duração das estadias entre os "
+                        "grupos) nem provam discriminação. Também não provam que o modelo seja "
+                        "livre de viés."
+                    ),
+
+                    html.H4("Atributos do modelo"),
+                    html.P(
+                        "O modelo final usa nove variáveis: animal_type (espécie), "
+                        "age_upon_intake_(days) (idade em dias), sex_upon_intake (sexo), "
+                        "intake_condition, intake_type, intake_month, intake_year, "
+                        "intake_weekday e intake_hour. Espécie, sexo e idade fazem parte das "
+                        "entradas; por isso a auditoria verifica diferenças de desempenho entre "
+                        "esses grupos mesmo sendo atributos do modelo."
+                    ),
+                    html.P(
+                        "As variáveis is_mix, is_black_or_dark e simplified_breed (raça e "
+                        "pelagem) não fazem parte do modelo final publicado. A ausência delas "
+                        "não comprova, por si só, a ausência de vieses indiretos."
                     ),
                 ]
             ),
