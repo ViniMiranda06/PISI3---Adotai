@@ -4,7 +4,8 @@ Ordem da página: achados primeiro, método depois.
   1. resposta direta à pergunta do título
   2. um cartão por grupo
   3. gráfico de bolhas (idade x permanência)
-  4. método (cotovelo e silhueta) e conclusão
+  4. método (cotovelo, silhueta e Calinski-Harabasz)
+  5. checagem da confiabilidade dos grupos e conclusão
 """
 from pathlib import Path
 
@@ -12,9 +13,9 @@ import dash
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import dcc, html
+from dash import dash_table, dcc, html
 
-from componentes import a_fazer, cabecalho_pagina, card, conclusao, grade, interpretacao
+from componentes import a_fazer, cabecalho_pagina, card, conclusao, grade, interpretacao, kpi
 import tema
 from leitura import existe_tabela, ler_tabela
 
@@ -126,6 +127,79 @@ def _preparar_perfis(df):
     df["idade_anos"] = df["idade_mediana_dias"] / 365.25
     df["idade_formatada"] = df["idade_mediana_dias"].apply(_formatar_idade)
     return df
+
+
+# [EXTRA] Checagem da clusterização (seção 5.1 do notebook) e desempenho do modelo
+# final por grupo no conjunto de teste (15.935 animais, limiar 0,51). Valores copiados
+# das saídas do notebook, como na auditoria de justiça da página Modelos.
+CHECAGEM_CLUSTERS = {
+    "ari_treino": 0.983,      # K-Means ajustado só no treino x base toda, comparados no teste
+    "ari_sementes": 0.993,    # média de 5 sementes aleatórias diferentes
+    "dif_split_pp": 0.26,     # maior diferença de proporção de um grupo entre treino e teste
+    "cramer_v": 0.026,        # associação entre grupo e classe Curta/Prolongada
+}
+# (grupo, animais no teste, % real Prolongada, recall, precisão, F1)
+MODELO_POR_GRUPO = [
+    ("Filhotes", 7165, 25.8, 0.654, 0.452, 0.535),
+    ("Jovens", 6787, 24.0, 0.621, 0.469, 0.534),
+    ("Idosos", 1983, 22.6, 0.595, 0.411, 0.486),
+]
+
+
+def _tabela_modelo_por_grupo():
+    colunas = ["Grupo", "Animais no teste", "Passam de 14 dias", "Recall Prolongada",
+               "Precisão Prolongada", "F1 Prolongada"]
+    dados = [
+        {"Grupo": g, "Animais no teste": _br(n, 0), "Passam de 14 dias": f"{_br(pct)}%",
+         "Recall Prolongada": _br(rec, 3), "Precisão Prolongada": _br(prec, 3), "F1 Prolongada": _br(f1, 3)}
+        for g, n, pct, rec, prec, f1 in MODELO_POR_GRUPO
+    ]
+    return dash_table.DataTable(
+        data=dados,
+        columns=[{"name": c, "id": c} for c in colunas],
+        style_table={"overflowX": "auto"},
+        style_header={"backgroundColor": tema.FUNDO, "color": tema.TEXTO, "fontWeight": "bold",
+                      "border": f"1px solid {tema.LINHAS}"},
+        style_cell={"backgroundColor": tema.CARTAO, "color": tema.TEXTO, "padding": "10px",
+                    "textAlign": "left", "border": f"1px solid {tema.LINHAS}", "whiteSpace": "normal",
+                    "height": "auto", "minWidth": "90px"},
+    )
+
+
+def _card_confiabilidade():
+    c = CHECAGEM_CLUSTERS
+    return card(
+        "Os grupos são confiáveis?",
+        html.P(
+            "Quatro verificações extras feitas no notebook, sem mudar os grupos mostrados acima:",
+            className="nota-grafico",
+        ),
+        grade(
+            kpi(_br(c["ari_treino"], 3), "Sem olhar o teste",
+                "Refazendo o K-Means só com os dados de treino, os grupos saem quase iguais "
+                "(índice de Rand ajustado; 1 = idênticos)."),
+            kpi(_br(c["ari_sementes"], 3), "Trocando a semente",
+                "Com 5 sorteios iniciais diferentes, os grupos praticamente não mudam."),
+            kpi(f"{_br(c['dif_split_pp'], 2)} p.p.", "Treino x teste",
+                "Maior diferença na proporção de um grupo entre os dados de treino e de teste."),
+            kpi(_br(c["cramer_v"], 3), "Grupo x permanência",
+                "V de Cramér entre grupo e Curta/Prolongada: abaixo de 0,1 a ligação é desprezível."),
+            colunas=4,
+        ),
+        html.P(
+            "O número do grupo não é usado pelos modelos de previsão, só para descrever os perfis. "
+            "Por isso, mesmo com o K-Means ajustado na base inteira, não há vazamento de informação "
+            "do conjunto de teste para os modelos.",
+            className="nota-grafico",
+        ),
+        html.H4("Como o modelo final se sai em cada grupo"),
+        _tabela_modelo_por_grupo(),
+        html.P(
+            "Recall: parte dos animais que passaram de 14 dias que o modelo encontrou. "
+            "Precisão: parte dos animais marcados como Prolongada que realmente passaram.",
+            className="nota-grafico",
+        ),
+    )
 
 
 # ------------------------------------------------------------ blocos de texto
@@ -551,6 +625,14 @@ if metricas is not None:
                 className="nota-grafico",
             ),
         ))
+
+    blocos.append(_card_confiabilidade())
+    blocos.append(interpretacao(
+        "Os grupos são estáveis e não dependem dos dados de teste, então os perfis são confiáveis "
+        "como descrição de quem chega ao abrigo. Mas eles quase não se diferenciam na permanência, "
+        "e o modelo final também se sai parecido nos três: um pouco pior nos Idosos, onde encontra "
+        "6 pontos percentuais a menos das estadias longas do que nos Filhotes."
+    ))
 
     blocos.append(conclusao(
         "Os grupos ajudam a resumir quem chega ao abrigo, mas a separação entre eles "
