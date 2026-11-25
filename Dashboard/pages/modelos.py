@@ -40,7 +40,46 @@ EXPERIMENTOS_EXTRAS = [
      "Acurácia": 0.70, "F1 macro": 0.65, "F1 Prolongada": 0.52, "Recall Prolongada": 0.66},
     {"Experimento": "EXP-04", "Modelo": "XGBoost", "Estratégia": "Pesos + raça e pelagem",
      "Acurácia": 0.71, "F1 macro": 0.66, "F1 Prolongada": 0.54, "Recall Prolongada": 0.68},
+    # [EXTRA] SMOTENC (seção 7.7 do notebook): mesmo teste, limiar 0,50
+    {"Experimento": "EXP-05", "Modelo": "Random Forest", "Estratégia": "SMOTENC",
+     "Acurácia": 0.7789, "F1 macro": 0.6860, "F1 Prolongada": 0.5153, "Recall Prolongada": 0.4770},
+    {"Experimento": "EXP-05", "Modelo": "Regressão Logística", "Estratégia": "SMOTENC",
+     "Acurácia": 0.6246, "F1 macro": 0.5815, "F1 Prolongada": 0.4472, "Recall Prolongada": 0.6162},
+    {"Experimento": "EXP-05", "Modelo": "KNN", "Estratégia": "SMOTENC",
+     "Acurácia": 0.6596, "F1 macro": 0.6060, "F1 Prolongada": 0.4608, "Recall Prolongada": 0.5903},
 ]
+
+# [EXTRA] SMOTE x SMOTENC: F1 macro no teste (seção 7.7 do notebook)
+SMOTE_X_SMOTENC = [
+    # (modelo, F1 macro com SMOTE, F1 macro com SMOTENC)
+    ("Random Forest", 0.6845, 0.6860),
+    ("Regressão Logística", 0.5804, 0.5815),
+    ("KNN", 0.6104, 0.6060),
+]
+
+
+def criar_grafico_smotenc():
+    modelos = [m for m, _, _ in SMOTE_X_SMOTENC]
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=modelos, y=[a for _, a, _ in SMOTE_X_SMOTENC], name="SMOTE", marker_color=tema.SECUNDARIA,
+        text=[f"{a:.3f}" for _, a, _ in SMOTE_X_SMOTENC], textposition="outside", cliponaxis=False,
+        hovertemplate="%{x}<br>SMOTE: %{y:.3f}<extra></extra>",
+    ))
+    fig.add_trace(go.Bar(
+        x=modelos, y=[b for _, _, b in SMOTE_X_SMOTENC], name="SMOTENC", marker_color=tema.PRIMARIA,
+        text=[f"{b:.3f}" for _, _, b in SMOTE_X_SMOTENC], textposition="outside", cliponaxis=False,
+        hovertemplate="%{x}<br>SMOTENC: %{y:.3f}<extra></extra>",
+    ))
+    fig.update_layout(
+        title="F1 macro no teste: SMOTE x SMOTENC",
+        barmode="group",
+        yaxis=dict(range=[0, 0.8], title="F1 macro", gridcolor=tema.LINHAS),
+        height=360,
+        margin=dict(l=20, r=20, t=65, b=40),
+        legend=dict(orientation="h", y=1.1, x=0),
+    )
+    return fig
 
 METRICAS = ["Acurácia", "F1 macro", "F1 Prolongada", "Recall Prolongada"]
 
@@ -210,6 +249,24 @@ JUSTICA_DIFERENCAS = [
     ("Sexo", "Unknown (0.038)", "Intact Female (0.669)", "0.630"),
     ("Faixa etária", "Adulto (0.477)", "Filhote (0.793)", "0.317"),
 ]
+# [EXTRA] Raça e pelagem (seção 7.4.2 do notebook): coluna de auditoria Raca_Discriminada,
+# criada só para os 14.955 cães e gatos do teste, depois da previsão. "Sim" = raça
+# estigmatizada (tipo pit bull, Rottweiler etc.), pelagem preta ou cão caramelo (SRD).
+JUSTICA_RACA = [
+    ("Não (cães e gatos)", 8399, 2140, "0.710", "0.452", 620, ""),
+    ("Sim (cães e gatos)", 6556, 1709, "0.537", "0.452", 792, ""),
+    ("Cães: Não", 3938, 681, "0.514", "0.346", 331, ""),
+    ("Cães: Sim", 5084, 1164, "0.405", "0.388", 693, ""),
+    ("Gatos: Não", 4461, 1459, "0.802", "0.498", 289, ""),
+    ("Gatos: Sim", 1472, 545, "0.818", "0.547", 99, ""),
+]
+# (comparação, razão de impacto com IC 95%, diferença de recall Sim - Não com IC 95%)
+JUSTICA_RACA_DIFERENCAS = [
+    ("Cães e gatos", "0.77 (0.74 a 0.81)", "-0.174 (-0.203 a -0.143)"),
+    ("Só cães", "0.93 (0.86 a 1.01)", "-0.109 (-0.156 a -0.061)"),
+    ("Só gatos", "1.05 (1.00 a 1.10)", "+0.016 (-0.023 a +0.054)"),
+]
+
 COLUNAS_JUSTICA = ["Grupo", "N", "N Prolongada", "Recall Prolongada",
                    "Precisão Prolongada", "Falsos negativos", "Observação"]
 
@@ -248,6 +305,15 @@ def _tabela_justica(linhas):
             for g, n, npro, rec, prec, fn, obs in linhas
         ],
         columns=[{"name": c, "id": c} for c in COLUNAS_JUSTICA],
+        **_ESTILO_TABELA,
+    )
+
+
+def _tabela_diferencas_raca():
+    cols = ["Comparação Sim x Não", "Razão de impacto (IC 95%)", "Diferença de recall (IC 95%)"]
+    return dash_table.DataTable(
+        data=[dict(zip(cols, linha)) for linha in JUSTICA_RACA_DIFERENCAS],
+        columns=[{"name": c, "id": c} for c in cols],
         **_ESTILO_TABELA,
     )
 
@@ -419,6 +485,36 @@ layout = html.Div(
                         "livre de viés."
                     ),
 
+                    html.H4("Por raça e pelagem"),
+                    html.P(
+                        "Para esta parte foi criada uma coluna de auditoria, Raca_Discriminada, "
+                        "só para os cães e gatos do teste e depois da previsão (ela não entra no "
+                        "modelo). É 'Sim' quando o animal tem ao menos um traço que costuma "
+                        "atrapalhar a adoção: raça estigmatizada (tipo pit bull, Staffordshire, "
+                        "Rottweiler, Doberman, Chow Chow e afins), pelagem preta ou cão caramelo "
+                        "(sem raça definida, de pelagem caramelo ou dourada). Ser SRD sozinho não "
+                        "conta, porque isso vale para 85% dos cães e gatos.",
+                        style={"color": tema.TEXTO_SEC},
+                    ),
+                    _tabela_justica(JUSTICA_RACA),
+                    _tabela_diferencas_raca(),
+                    html.P(
+                        "Razão de impacto: quantas vezes o grupo 'Sim' é marcado como Prolongada "
+                        "em relação ao 'Não' (abaixo de 0,8 indica diferença relevante). Os "
+                        "intervalos de confiança vêm de 1.000 reamostragens (bootstrap): se o "
+                        "intervalo da diferença de recall não inclui zero, a diferença é significativa.",
+                        style={"color": tema.TEXTO_SEC},
+                    ),
+                    interpretacao(
+                        "Os dois grupos ficam mais de 14 dias na mesma proporção (26% e 25%), mas o "
+                        "modelo marca menos animais do grupo 'Sim' como Prolongada e encontra menos "
+                        "deles (recall 0,537 contra 0,710). Boa parte disso vem da espécie, porque o "
+                        "grupo 'Sim' tem mais cães. Mesmo só entre cães, porém, o modelo encontra 11 "
+                        "pontos percentuais a menos das estadias longas do grupo 'Sim', que são "
+                        "justamente os que ficam mais tempo (23% contra 17%). Entre os gatos não há "
+                        "diferença."
+                    ),
+
                     html.H4("Atributos do modelo"),
                     html.P(
                         "O modelo final usa nove variáveis: animal_type (espécie), "
@@ -430,8 +526,9 @@ layout = html.Div(
                     ),
                     html.P(
                         "As variáveis is_mix, is_black_or_dark e simplified_breed (raça e "
-                        "pelagem) não fazem parte do modelo final publicado. A ausência delas "
-                        "não comprova, por si só, a ausência de vieses indiretos."
+                        "pelagem) não fazem parte do modelo final publicado. A auditoria por raça "
+                        "e pelagem mostra que a ausência delas não evita diferenças: como o modelo "
+                        "não vê a raça, ele não percebe que esses cães tendem a ficar mais tempo."
                     ),
                 ]
             ),
@@ -486,6 +583,22 @@ layout = html.Div(
                         "(F1 macro de 0,65 para 0,66). Essas variáveis são hipóteses a "
                         "investigar, não evidência de que raça ou pelagem causem a "
                         "permanência."
+                    ),
+                    html.H4("EXP-05 — SMOTENC"),
+                    html.P(
+                        "O SMOTE dos modelos clássicos cria animais artificiais misturando dois "
+                        "vizinhos depois que as categorias já viraram colunas de 0 e 1. Por isso, "
+                        "7% dos exemplos criados (2.251 de 32.321) eram impossíveis, como 147 "
+                        "animais que eram cão e gato ao mesmo tempo. O SMOTENC mistura só os "
+                        "números e sorteia as categorias entre os vizinhos: nenhum exemplo "
+                        "impossível."
+                    ),
+                    dcc.Graph(figure=criar_grafico_smotenc(), config={"displayModeBar": False}),
+                    html.P(
+                        "Mesmo com dados mais coerentes, o resultado ficou praticamente igual "
+                        "(diferença de F1 macro abaixo de 0,005). Na configuração do modelo final, "
+                        "SMOTE ou SMOTENC baixam o recall da classe Prolongada para cerca de 0,53, "
+                        "contra 0,65 com pesos por classe, então o modelo final continua com pesos."
                     ),
                 ]
             ),
